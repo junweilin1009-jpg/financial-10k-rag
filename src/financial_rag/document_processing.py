@@ -8,6 +8,8 @@ from pathlib import Path
 import pdfplumber
 from langchain_core.documents import Document
 
+from .filings import FilingMetadata, inspect_filing
+
 
 TABLE_MARKERS = (
     "consolidated balance sheets",
@@ -92,9 +94,14 @@ def looks_like_table_page(text: str) -> bool:
     return marker_match and numeric_density >= 40
 
 
-def load_pdf_documents(pdf_path: Path) -> tuple[list[Document], list[Document]]:
-    company = infer_company(pdf_path.name)
-    fiscal_year_end = infer_fiscal_year_end(company)
+def load_pdf_documents(
+    pdf_path: Path,
+    filing: FilingMetadata | None = None,
+) -> tuple[list[Document], list[Document]]:
+    """Extract a verified filing into page documents and table supplements."""
+    filing = filing or inspect_filing(pdf_path)
+    company = filing.company
+    fiscal_year_end = filing.fiscal_year_end
     page_documents: list[Document] = []
     table_pages: list[Document] = []
     with pdfplumber.open(str(pdf_path)) as pdf:

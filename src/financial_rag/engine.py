@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Sequence
 
 import pdfplumber
+import faiss
+from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -20,6 +22,7 @@ from openai import OpenAI
 
 from .config import CACHE_VERSION, PROJECT_COMPANIES, RAGConfig
 from .document_processing import clean_pdf_text, infer_fiscal_year_end, load_pdf_documents
+from .filings import validate_filing_set
 from .prompts import SYSTEM_PROMPT
 from .retrieval import (
     AI_RISK_FOCUS_QUERIES,
@@ -46,13 +49,17 @@ def validate_model(model: str, api_key: str | None = None) -> str:
 
 
 class FinancialRAG:
-    def __init__(self, config: RAGConfig | None = None):
+    def __init__(
+        self,
+        config: RAGConfig | None = None,
+        api_key: str | None = None,
+    ):
         self.config = config or RAGConfig()
         self.vector_store: FAISS | None = None
         self.table_pages: list[Document] = []
         self.evidence_pages: list[Document] = []
         self.build_stats: dict = {}
-        openai_api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+        openai_api_key = (api_key or os.environ.get("OPENAI_API_KEY", "")).strip()
         if not openai_api_key:
             raise ValueError(
                 "OPENAI_API_KEY is required for both OpenAI embeddings and the answer model."
@@ -84,11 +91,9 @@ class FinancialRAG:
         table_pages: list[Document] = []
         loaded_files = []
 
-        for raw_path in pdf_paths:
-            path = Path(raw_path)
-            if not path.exists():
-                raise FileNotFoundError(f"PDF not found: {path}")
-            pages, tables = load_pdf_documents(path)
+        filings = validate_filing_set(pdf_paths)
+        for path, filing in filings.items():
+            pages, tables = load_pdf_documents(path, filing=filing)
             page_documents.extend(pages)
             table_pages.extend(tables)
             loaded_files.append(path.name)
@@ -141,12 +146,56 @@ class FinancialRAG:
         }
         return self._fingerprint_for_config(pdf_paths, index_config)
 
-    def _legacy_cache_fingerprint(self, pdf_paths: Sequence[str | Path]) -> str:
-        # The first cache version hashed every RAG setting. Preserve access to
-        # the index created before max_output_tokens changed from 1800 to 3000.
-        legacy_config = asdict(self.config)
-        legacy_config["max_output_tokens"] = 1800
-        return self._fingerprint_for_config(pdf_paths, legacy_config)
+    def _load_safe_cache(self, faiss_path: Path, payload: dict) -> None:
+        """Restore a FAISS store without deserializing executable pickle data."""
+        index_path = faiss_path / "index.faiss"
+        documents = payload.get("documents")
+        raw_mapping = payload.get("index_to_docstore_id")
+        if not index_path.is_file() or not isinstance(documents, dict) or not isinstance(raw_mapping, dict):
+            raise ValueError("Cache is incomplete or uses the retired pickle format.")
+
+        try:
+            mapping = {int(index): str(doc_id) for index, doc_id in raw_mapping.items()}
+            docstore = InMemoryDocstore({
+                str(doc_id): Document(
+                    page_content=str(item["page_content"]),
+                    metadata=dict(item["metadata"]),
+                )
+                for doc_id, item in documents.items()
+            })
+            index = faiss.read_index(str(index_path))
+        except (KeyError, TypeError, ValueError, RuntimeError) as exc:
+            raise ValueError(f"Cache contents are invalid: {exc}") from exc
+
+        expected_indexes = set(range(index.ntotal))
+        if set(mapping) != expected_indexes or set(mapping.values()) != set(documents):
+            raise ValueError("Cache document mapping does not match the FAISS index.")
+        self.vector_store = FAISS(self.embeddings, index, docstore, mapping)
+
+    def _safe_cache_payload(self, stats: dict) -> dict:
+        """Create a JSON-only cache payload for documents and metadata."""
+        if self.vector_store is None:
+            raise RuntimeError("Vector store was not created during build.")
+        indexed = getattr(self.vector_store.docstore, "_dict", {})
+        return {
+            "cache_format": "faiss-json-v2",
+            "build_stats": stats,
+            "index_to_docstore_id": {
+                str(index): doc_id
+                for index, doc_id in self.vector_store.index_to_docstore_id.items()
+            },
+            "documents": {
+                doc_id: {
+                    "page_content": document.page_content,
+                    "metadata": document.metadata,
+                }
+                for doc_id, document in indexed.items()
+            },
+            "table_pages": [
+                {"page_content": doc.page_content, "metadata": doc.metadata}
+                for doc in self.table_pages
+            ],
+        }
 
     def build_or_load(
         self,
@@ -154,31 +203,20 @@ class FinancialRAG:
         cache_root: str | Path,
         rebuild: bool = False,
     ) -> dict:
-        """Load a trusted local FAISS cache or build and persist a new one."""
+        """Load a JSON-backed FAISS cache or build and persist a new one."""
         paths = [Path(path).resolve() for path in pdf_paths]
+        # Validate before either a cache hit or a rebuild. Public callers may
+        # invoke this method directly instead of going through an interface.
+        validate_filing_set(paths)
         fingerprint = self._cache_fingerprint(paths)
         cache_path = Path(cache_root) / fingerprint
         faiss_path = cache_path / "faiss"
         metadata_path = cache_path / "metadata.json"
+        index_path = faiss_path / "index.faiss"
 
-        if not rebuild and not (faiss_path.exists() and metadata_path.exists()):
-            legacy_fingerprint = self._legacy_cache_fingerprint(paths)
-            legacy_path = Path(cache_root) / legacy_fingerprint
-            legacy_faiss = legacy_path / "faiss"
-            legacy_metadata = legacy_path / "metadata.json"
-            if legacy_faiss.exists() and legacy_metadata.exists():
-                fingerprint = legacy_fingerprint
-                cache_path = legacy_path
-                faiss_path = legacy_faiss
-                metadata_path = legacy_metadata
-
-        if not rebuild and faiss_path.exists() and metadata_path.exists():
+        if not rebuild and index_path.is_file() and metadata_path.is_file():
             payload = json.loads(metadata_path.read_text(encoding="utf-8"))
-            self.vector_store = FAISS.load_local(
-                str(faiss_path),
-                self.embeddings,
-                allow_dangerous_deserialization=True,
-            )
+            self._load_safe_cache(faiss_path, payload)
             self.table_pages = [
                 Document(page_content=item["page_content"], metadata=item["metadata"])
                 for item in payload.get("table_pages", [])
@@ -197,14 +235,9 @@ class FinancialRAG:
         cache_path.mkdir(parents=True, exist_ok=True)
         if self.vector_store is None:
             raise RuntimeError("Vector store was not created during build.")
-        self.vector_store.save_local(str(faiss_path))
-        payload = {
-            "build_stats": stats,
-            "table_pages": [
-                {"page_content": doc.page_content, "metadata": doc.metadata}
-                for doc in self.table_pages
-            ],
-        }
+        faiss_path.mkdir(parents=True, exist_ok=True)
+        faiss.write_index(self.vector_store.index, str(index_path))
+        payload = self._safe_cache_payload(stats)
         metadata_path.write_text(
             json.dumps(payload, ensure_ascii=False, indent=2),
             encoding="utf-8",
@@ -748,8 +781,13 @@ class FinancialRAG:
 
         return dedupe(documents), strategy, companies
 
-    def _format_context(self, documents: Sequence[Document]) -> str:
+    def _format_context(
+        self,
+        documents: Sequence[Document],
+    ) -> tuple[str, list[Document]]:
+        """Format context and return only documents actually sent to the model."""
         blocks = []
+        included_documents = []
         total_chars = 0
         for index, doc in enumerate(documents, start=1):
             metadata = doc.metadata
@@ -763,8 +801,9 @@ class FinancialRAG:
             if total_chars + len(block) > self.config.max_context_chars:
                 break
             blocks.append(block)
+            included_documents.append(doc)
             total_chars += len(block)
-        return "\n\n".join(blocks)
+        return "\n\n".join(blocks), included_documents
 
     @staticmethod
     def _message_text(message) -> str:
@@ -844,7 +883,11 @@ class FinancialRAG:
     def answer(self, question: str) -> dict:
         started = time.perf_counter()
         documents, strategy, companies = self.retrieve(question)
-        context = self._format_context(documents)
+        context, context_documents = self._format_context(documents)
+        if not context_documents:
+            raise ValueError(
+                "No retrieved evidence fit within the configured context limit."
+            )
         human_message = f"Retrieved filing context:\n\n{context}\n\nQuestion:\n{question}"
         messages = [
             ("system", SYSTEM_PROMPT),
@@ -877,7 +920,7 @@ class FinancialRAG:
                 answer = answer.rstrip() + "\n" + continuation.lstrip()
             stop_reason = self._stop_reason(response)
         sources = []
-        for rank, doc in enumerate(documents, start=1):
+        for rank, doc in enumerate(context_documents, start=1):
             metadata = doc.metadata
             sources.append({
                 "rank": rank,
@@ -898,5 +941,7 @@ class FinancialRAG:
             "latency_seconds": round(time.perf_counter() - started, 2),
             "stop_reason": stop_reason,
             "continuation_attempts": continuation_attempts,
+            "retrieved_document_count": len(documents),
+            "context_document_count": len(context_documents),
             **token_usage,
         }

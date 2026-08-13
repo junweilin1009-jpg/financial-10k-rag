@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .config import DEFAULT_LLM_MODEL, RAGConfig
 from .engine import FinancialRAG, validate_model
+from .filings import validate_filing_set
 
 
 def parse_args() -> argparse.Namespace:
@@ -22,13 +23,14 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def require_api_key() -> None:
-    if os.environ.get("OPENAI_API_KEY", "").strip():
-        return
+def require_api_key() -> str:
+    configured = os.environ.get("OPENAI_API_KEY", "").strip()
+    if configured:
+        return configured
     key = getpass.getpass("OpenAI API key: ").strip()
     if not key:
         raise ValueError("OPENAI_API_KEY is required.")
-    os.environ["OPENAI_API_KEY"] = key
+    return key
 
 
 def print_result(result: dict, show_sources: bool) -> None:
@@ -50,13 +52,12 @@ def print_result(result: dict, show_sources: bool) -> None:
 
 def main() -> None:
     args = parse_args()
-    require_api_key()
-    validate_model(args.model)
+    api_key = require_api_key()
+    validate_model(args.model, api_key=api_key)
     pdf_paths = sorted(args.pdf_dir.glob("*.pdf"))
-    if len(pdf_paths) != 3:
-        raise ValueError(f"Expected exactly three PDFs in {args.pdf_dir}; found {len(pdf_paths)}.")
+    validate_filing_set(pdf_paths)
 
-    engine = FinancialRAG(RAGConfig(llm_model=args.model))
+    engine = FinancialRAG(RAGConfig(llm_model=args.model), api_key=api_key)
     dimensions = engine.validate_embedding_credentials()
     stats = engine.build_or_load(pdf_paths, args.cache_dir, rebuild=args.rebuild_index)
     action = "loaded from cache" if stats.get("cache_hit") else "built from PDFs"

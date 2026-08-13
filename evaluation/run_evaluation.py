@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 
 from financial_rag import DEFAULT_LLM_MODEL, FinancialRAG, RAGConfig, validate_model
+from financial_rag.filings import validate_filing_set
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -47,13 +48,14 @@ def load_questions(path: Path, requested: str | None, limit: int | None) -> list
     return rows[:limit] if limit else rows
 
 
-def require_api_key() -> None:
-    if os.environ.get("OPENAI_API_KEY", "").strip():
-        return
+def require_api_key() -> str:
+    configured = os.environ.get("OPENAI_API_KEY", "").strip()
+    if configured:
+        return configured
     key = getpass.getpass("OpenAI API key: ").strip()
     if not key:
         raise ValueError("OPENAI_API_KEY is required.")
-    os.environ["OPENAI_API_KEY"] = key
+    return key
 
 
 def write_markdown(path: Path, rows: list[dict], model: str) -> None:
@@ -96,13 +98,12 @@ def main() -> None:
     if not questions:
         raise ValueError("No questions were selected.")
 
-    require_api_key()
-    validate_model(args.model)
+    api_key = require_api_key()
+    validate_model(args.model, api_key=api_key)
     pdf_paths = sorted(PDF_DIR.glob("*.pdf"))
-    if len(pdf_paths) != 3:
-        raise ValueError(f"Expected exactly three PDFs in {PDF_DIR}; found {len(pdf_paths)}.")
+    validate_filing_set(pdf_paths)
 
-    engine = FinancialRAG(RAGConfig(llm_model=args.model))
+    engine = FinancialRAG(RAGConfig(llm_model=args.model), api_key=api_key)
     dimensions = engine.validate_embedding_credentials()
     print(f"Embedding credentials valid: {dimensions} dimensions")
     stats = engine.build_or_load(pdf_paths, CACHE_DIR, rebuild=args.rebuild_index)
@@ -153,4 +154,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

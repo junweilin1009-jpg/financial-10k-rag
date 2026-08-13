@@ -9,7 +9,7 @@ An evidence-grounded retrieval-augmented generation system for the 2025 Form 10-
 - Answer direct, calculated, comparative, multilingual, qualitative, and adversarial questions using only the supplied filings.
 - Show PDF-file and page citations and retain the retrieved chunks for every message in Streamlit history.
 - Run locally in a browser, in macOS/Windows/Linux terminals, in the VS Code terminal, or in Google Colab.
-- Accept three replacement PDFs through Streamlit without editing code.
+- Accept replacement copies of the same three verified 2025 filings through Streamlit without editing code.
 - Reuse a fingerprinted FAISS cache when the source files and retrieval configuration are unchanged.
 - Export a Streamlit conversation as CSV.
 - Run all or selected questions from a public 117-question bank and export auditable CSV and Markdown results.
@@ -39,7 +39,11 @@ Never commit a real API key. `.env` is ignored; `.env.example` documents the exp
 streamlit run app/streamlit_app.py
 ```
 
-Open the local URL printed by Streamlit, normally `http://localhost:8501`. Entering the key in the sidebar is also supported; it is kept only in the running process. The first run embeds the PDFs and can take several minutes. Later runs reuse `cache/faiss/`.
+Open the local URL printed by Streamlit, normally `http://localhost:8501`. Entering the key in the sidebar is also supported; it is passed directly to the API clients for that Streamlit session and is not copied into process-wide environment variables or written to disk. The first run embeds the PDFs and can take several minutes. Later runs reuse `cache/faiss/`.
+
+The cache stores the native FAISS index plus a JSON document mapping; it does not deserialize a Python pickle. Cache format changes deliberately trigger a one-time index rebuild.
+
+Uploaded replacements are validated from their PDF contents, not just their filenames. Each set must contain exactly one 2025 Form 10-K for Alphabet, Amazon, and Microsoft; other periods are rejected to prevent incorrect company or fiscal-period metadata.
 
 ### Terminal or VS Code terminal
 

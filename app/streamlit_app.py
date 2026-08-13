@@ -19,6 +19,7 @@ from financial_rag import (
     validate_model,
 )
 from financial_rag.document_processing import infer_company
+from financial_rag.filings import validate_filing_set
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -155,9 +156,8 @@ with st.sidebar:
 
 
 if build_button:
-    if openai_key.strip():
-        os.environ["OPENAI_API_KEY"] = openai_key.strip()
-    if not os.environ.get("OPENAI_API_KEY"):
+    api_key = openai_key.strip() or os.environ.get("OPENAI_API_KEY", "").strip()
+    if not api_key:
         st.error("Enter an OpenAI API key or set OPENAI_API_KEY in the environment.")
     else:
         try:
@@ -165,10 +165,11 @@ if build_button:
             missing = [path for path in pdf_paths if not path.exists()]
             if missing:
                 raise FileNotFoundError("Missing included PDF(s): " + ", ".join(path.name for path in missing))
+            validate_filing_set(pdf_paths)
             config = RAGConfig(llm_model=model_id.strip(), embedding_model=DEFAULT_EMBEDDING_MODEL)
             with st.spinner("Validating the model and loading the financial index..."):
-                validate_model(config.llm_model)
-                engine = FinancialRAG(config)
+                validate_model(config.llm_model, api_key=api_key)
+                engine = FinancialRAG(config, api_key=api_key)
                 dimensions = engine.validate_embedding_credentials()
                 stats = engine.build_or_load(pdf_paths, cache_root=CACHE_DIR, rebuild=False)
             st.session_state.rag_engine = engine
@@ -236,4 +237,3 @@ if st.session_state.messages:
         file_name="financial_rag_conversation.csv",
         mime="text/csv",
     )
-

@@ -10,5 +10,4 @@ This folder contains the three Form 10-K PDFs used in the course project:
 
 The filings were provided as course materials and are included solely to make the educational RAG experiment reproducible. The repository authors do not claim ownership of the filings.
 
-The application identifies issuers from filenames. Replacement files must contain `Alphabet` or `Google`, `Amazon`, and `Microsoft` in their respective filenames. The Streamlit interface requires all three replacements at once so data versions are not mixed accidentally.
-
+The application validates issuer, Form 10-K identity, and reporting period from each PDF's opening pages. Replacement filenames must still contain `Alphabet` or `Google`, `Amazon`, and `Microsoft` so the Streamlit upload interface can group them before validation. The interface requires all three supported 2025 filings at once so issuers or reporting periods are not mixed accidentally.

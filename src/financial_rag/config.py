@@ -7,7 +7,7 @@ from dataclasses import dataclass
 
 DEFAULT_LLM_MODEL = "gpt-5.6-sol"
 DEFAULT_EMBEDDING_MODEL = "text-embedding-3-large"
-CACHE_VERSION = "2026-07-17-public-v1"
+CACHE_VERSION = "2026-08-13-safe-cache-v2"
 PROJECT_COMPANIES = ("Alphabet/Google", "Amazon", "Microsoft")
 
 
@@ -29,4 +29,3 @@ class RAGConfig:
     max_continuation_attempts: int = 1
     reasoning_effort: str = "medium"
     response_verbosity: str = "medium"
-
