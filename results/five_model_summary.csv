@@ -1,0 +1,7 @@
+model,score_out_of_20,average_latency_seconds,input_tokens,output_tokens,total_tokens,input_price_per_million_usd,output_price_per_million_usd,cost_for_10_questions_usd,cost_per_question_usd,primary_tradeoff
+gpt-5.6-sol,20.0,10.69,95501,6440,101941,5.00,30.00,0.6707,0.0671,Highest accuracy and completion; selected final model
+gpt-5.6-luna,19.5,5.40,95501,6437,101938,1.00,6.00,0.1341,Fastest and cheapest; strongest commercial cost-latency option
+gpt-5.6-terra,19.5,5.51,95501,4870,100371,2.50,15.00,0.3118,Fast and concise but no clear advantage over Luna in this benchmark
+claude-sonnet-5,19.5,16.82,159748,15947,175695,2.00,10.00,0.4790,Conservative evidence handling; introductory pricing used
+claude-fable-5,19.5,16.41,138828,12306,151134,10.00,50.00,2.0036,Detailed analysis but highest cost
+

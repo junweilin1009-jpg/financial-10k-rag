@@ -1,0 +1,12 @@
+question_id,test_focus,before_10_question_improvement,after_10_question_improvement,assessment
+CLASS-001,Cloud segment operating margins,"Correct figures, formulas, and ranking","Correct figures, formulas, ranking, and clearer fiscal-period wording",Strength preserved
+CLASS-002,Effective tax-rate reconciliation,"Incomplete retrieval prevented a three-company ranking","Retrieved complete rates and signed factors for all three companies",Major retrieval improvement
+CLASS-003,Beginning-of-period cash balance,"Correct $73.890 billion answer","Correct $73.890 billion answer",Strength preserved
+CLASS-004,R&D comparability,"Correctly refused to equate Amazon Technology and infrastructure with Microsoft R&D","Maintained the non-comparability conclusion with clearer evidence",Strength preserved
+CLASS-005,Cash-tax gap,"Only Amazon had both required inputs; Alphabet and Microsoft were incomplete","Retrieved both inputs for all companies and completed the ranking",Major retrieval improvement
+CLASS-006,2026 profit prediction,"Used a 2023-2025 CAGR and produced a $124.1 billion scenario","Used the latest annual growth rate and labeled the $101.8 billion result as an illustrative scenario",More defensible boundary handling
+CLASS-007,Microsoft FY2024 PBP revenue,"Correct $106.820 billion answer","Correct $106.820 billion answer",Strength preserved
+CLASS-008,Largest reportable segment share,"Alphabet and Amazon completed; Microsoft evidence missing","Completed all three companies and ranked 85.1%, 59.5%, and 42.9%",Major retrieval improvement
+CLASS-009,Revenue profit and investment advice,"Correct historical leaders and refused unsupported investment selection","Maintained factual comparison and investment-evidence limitation",Strength preserved
+CLASS-010,Capex and revenue,"Missing exact cash-flow evidence and relied partly on narrative proxies","Used exact cash-flow captions, completed all ratios, and disclosed proxy limitations",Major retrieval improvement
+

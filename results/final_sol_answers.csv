@@ -1,0 +1,186 @@
+﻿group,question,answer,retrieval_strategy,retrieved_sources,latency_seconds,model,embedding_model,stop_reason,continuation_attempts,input_tokens,output_tokens,reasoning_tokens,cached_input_tokens,total_tokens,error
+1,"Among AWS, Google Cloud, and Microsoft's Intelligent Cloud, which segment had the highest operating margin in its most recent fiscal year? Rank all three with percentages.","### Ranking by segment operating margin
+
+Operating margin = **segment operating income ÷ segment revenue (or net sales)**.
+
+1. **Microsoft Intelligent Cloud — 42.0%**  
+   Fiscal year ended **June 30, 2025**:  
+   \[
+   \$44{,}589\text{ million} \div \$106{,}265\text{ million}=41.96\%
+   \]
+   [Microsoft, Microsoft_10K_2025.pdf, PDF page 143]
+
+2. **Amazon AWS — 35.4%**  
+   Year ended **December 31, 2025**:  
+   \[
+   \$45{,}606\text{ million} \div \$128{,}725\text{ million}=35.43\%
+   \]
+   Amazon labels revenue as **“net sales.”**  
+   [Amazon, Amazon_10k_2025.pdf, PDF page 109]
+
+3. **Alphabet Google Cloud — 23.7%**  
+   Year ended **December 31, 2025**:  
+   \[
+   \$13{,}910\text{ million} \div \$58{,}705\text{ million}=23.69\%
+   \]
+   [Alphabet, Alphabet_10k_2025.pdf, PDF page 88]
+
+**Conclusion:** Microsoft’s **Intelligent Cloud** had the highest calculated operating margin.
+
+These are calculated margins rather than explicitly presented segment-margin percentages. Comparability is limited because Microsoft’s fiscal year ended June 30, while Amazon’s and Alphabet’s ended December 31, and each company defines its cloud-related segment differently.",company_balanced_mmr+focused_evidence+table_supplement+evidence_pages,"Alphabet/Google p.88 (Alphabet_10k_2025.pdf, table_page); Amazon p.43 (Amazon_10k_2025.pdf, table_page); Microsoft p.68 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.37 (Alphabet_10k_2025.pdf, table_page); Amazon p.109 (Amazon_10k_2025.pdf, table_page); Amazon p.107 (Amazon_10k_2025.pdf, table_page); Microsoft p.143 (Microsoft_10K_2025.pdf, table_page); Amazon p.107 (Amazon_10k_2025.pdf, page_text); Amazon p.111 (Amazon_10k_2025.pdf, page_text); Microsoft p.143 (Microsoft_10K_2025.pdf, page_text); Microsoft p.68 (Microsoft_10K_2025.pdf, page_text); Alphabet/Google p.37 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.55 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, page_text); Amazon p.109 (Amazon_10k_2025.pdf, page_text); Amazon p.49 (Amazon_10k_2025.pdf, page_text); Microsoft p.65 (Microsoft_10K_2025.pdf, page_text); Microsoft p.63 (Microsoft_10K_2025.pdf, page_text)",11.1,gpt-5.6-sol,text-embedding-3-large,completed,0,9611,636,284,0,10247,
+2,"Using the effective tax rate reconciliation tables in the latest 10-K filings, identify which of Amazon, Alphabet, and Microsoft had the largest difference between the U.S. statutory federal tax rate and its reported effective tax rate. Then identify the single disclosed factor that contributed most to that difference for each company.","### Comparison of 2025 effective tax rates
+
+Difference calculated as:
+
+\[
+\text{U.S. statutory rate} - \text{reported effective tax rate}
+\]
+
+| Company and fiscal period | U.S. statutory rate | Effective tax rate | Difference | Largest factor driving the rate downward |
+|---|---:|---:|---:|---|
+| **Alphabet**, year ended Dec. 31, 2025 | 21.0% | 16.8% | **4.2 percentage points** | Foreign-derived intangible income deduction: **−2.5 percentage points** (tax effect: **−$3.931 billion**) [Alphabet, Alphabet_10k_2025.pdf, PDF page 85] |
+| **Microsoft**, year ended June 30, 2025 | 21.0% | 17.6% | **3.4 percentage points** | Foreign earnings taxed at lower rates: **−1.5 percentage points** [Microsoft, Microsoft_10K_2025.pdf, PDF page 125] |
+| **Amazon**, year ended Dec. 31, 2025 | 21.0% | 19.6% | **1.4 percentage points** | Research and development tax credits: **−2.5 percentage points** (tax effect: **−$2.403 billion**) [Amazon, Amazon_10k_2025.pdf, PDF page 105] |
+
+**Conclusion:** Alphabet had the largest statutory-to-effective tax-rate difference in its latest 10-K: **4.2 percentage points**.
+
+“Contributed most” is interpreted as the largest individual factor reducing the rate below 21.0%. On an absolute-magnitude basis, Amazon’s −2.5-point R&D credit ties its **+2.5-point** state and local tax factor, and Microsoft’s −1.5-point foreign-earnings factor ties its **+1.5-point** state tax factor; those positive factors increased rather than drove down the effective rates. Alphabet had no such absolute-magnitude tie.
+
+The periods are not perfectly aligned: Alphabet and Amazon report calendar-year 2025, while Microsoft reports the fiscal year ended June 30, 2025.",company_balanced_mmr+focused_evidence+table_supplement+evidence_pages,"Alphabet/Google p.85 (Alphabet_10k_2025.pdf, table_page); Amazon p.105 (Amazon_10k_2025.pdf, table_page); Microsoft p.125 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, table_page); Alphabet/Google p.60 (Alphabet_10k_2025.pdf, table_page); Amazon p.65 (Amazon_10k_2025.pdf, table_page); Amazon p.82 (Amazon_10k_2025.pdf, table_page); Microsoft p.118 (Microsoft_10K_2025.pdf, table_page); Microsoft p.144 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.85 (Alphabet_10k_2025.pdf, page_text); Amazon p.105 (Amazon_10k_2025.pdf, page_text); Microsoft p.125 (Microsoft_10K_2025.pdf, page_text); Alphabet/Google p.22 (Alphabet_10k_2025.pdf, page_text); Amazon p.39 (Amazon_10k_2025.pdf, page_text); Amazon p.41 (Amazon_10k_2025.pdf, page_text); Microsoft p.74 (Microsoft_10K_2025.pdf, page_text); Microsoft p.47 (Microsoft_10K_2025.pdf, page_text)",16.77,gpt-5.6-sol,text-embedding-3-large,completed,0,12212,982,516,0,13194,
+3,"What was Amazon's cash, cash equivalents, and restricted cash at the beginning of fiscal 2024?","Amazon’s **cash, cash equivalents, and restricted cash at the beginning of fiscal 2024** was **$73,890 million ($73.890 billion)**. Fiscal 2024 ended December 31, 2024. [Amazon, Amazon_10k_2025.pdf, PDF page 60]",company_filtered_similarity+table_supplement,"Amazon p.80 (Amazon_10k_2025.pdf, table_page); Amazon p.74 (Amazon_10k_2025.pdf, table_page); Amazon p.87 (Amazon_10k_2025.pdf, page_text); Amazon p.63 (Amazon_10k_2025.pdf, page_text); Amazon p.60 (Amazon_10k_2025.pdf, page_text); Amazon p.87 (Amazon_10k_2025.pdf, table_page); Amazon p.85 (Amazon_10k_2025.pdf, page_text)",3.85,gpt-5.6-sol,text-embedding-3-large,completed,0,4395,172,102,0,4567,
+4,"Compare R&D expense as % of total revenue for Microsoft, and Amazon (most recent FY). Rank + give each %.","A valid two-company **R&D expense ranking cannot be made** from the retrieved context.
+
+- **Microsoft — fiscal year ended June 30, 2025:**  
+  R&D expense = **$32,488 million**; total revenue = **$281,724 million**.  
+  \[
+  \$32{,}488 \div \$281{,}724 \times 100 = 11.53\%
+  \]
+  **R&D expense was 11.5% of revenue**, or **12% as reported**. [Microsoft, Microsoft_10K_2025.pdf, PDF pages 70 and 87]
+
+- **Amazon — year ended December 31, 2025:**  
+  Total net sales were **$716,924 million**, but the retrieved context does **not provide an Amazon R&D expense numerator**. Amazon instead presents the broader caption **“Technology and infrastructure,”** which must not be treated as equivalent to R&D. The excerpt shows percentages of **13.9% and 15.1%**, but omits the column headers, so their year mapping is also not conclusive from that excerpt alone. [Amazon, Amazon_10k_2025.pdf, PDF pages 45 and 61]
+
+**Ranking:** Not supportable because comparable Amazon R&D expense evidence is missing from the retrieved context.",company_balanced_mmr+focused_evidence+table_supplement,"Amazon p.107 (Amazon_10k_2025.pdf, table_page); Amazon p.111 (Amazon_10k_2025.pdf, table_page); Microsoft p.87 (Microsoft_10K_2025.pdf, table_page); Microsoft p.140 (Microsoft_10K_2025.pdf, table_page); Amazon p.116 (Amazon_10k_2025.pdf, page_text); Amazon p.61 (Amazon_10k_2025.pdf, page_text); Microsoft p.61 (Microsoft_10K_2025.pdf, page_text); Microsoft p.68 (Microsoft_10K_2025.pdf, page_text); Amazon p.109 (Amazon_10k_2025.pdf, table_page); Amazon p.45 (Amazon_10k_2025.pdf, page_text); Amazon p.43 (Amazon_10k_2025.pdf, page_text); Microsoft p.70 (Microsoft_10K_2025.pdf, table_page); Microsoft p.100 (Microsoft_10K_2025.pdf, page_text)",14.2,gpt-5.6-sol,text-embedding-3-large,completed,0,8017,754,470,0,8771,
+5,"Using only the latest 10-K filings, calculate each company’s 2025 “cash-tax gap,” defined as income taxes paid, net of refunds, minus provision for income taxes, for Alphabet, Amazon, and Microsoft. Report each result in USD billions, rank the three companies from highest to lowest, and identify the only company with a positive gap. Use each company’s own fiscal year and do not substitute income taxes payable or the effective tax rate.","### 2025 cash-tax gap
+
+**Formula:** Income taxes paid, net of refunds − provision for income taxes.
+
+| Rank | Company and fiscal period | Income taxes paid, net of refunds | Provision for income taxes | Cash-tax gap |
+|---:|---|---:|---:|---:|
+| 1 | **Microsoft**, fiscal year ended June 30, 2025 | $28.7 billion | $21.795 billion | **+$6.9 billion** |
+| 2 | **Alphabet**, year ended December 31, 2025 | $21.526 billion | $26.656 billion | **−$5.130 billion** |
+| 3 | **Amazon**, year ended December 31, 2025 | $8.295 billion | $19.087 billion | **−$10.792 billion** |
+
+Calculations:
+
+- **Microsoft:** $28.7B − $21.795B = $6.905B, reported as **+$6.9B** because taxes paid were disclosed only to the nearest $0.1 billion. [Microsoft, Microsoft_10K_2025.pdf, PDF page 127] [Microsoft, Microsoft_10K_2025.pdf, PDF page 125]
+- **Alphabet:** $21.526B − $26.656B = **−$5.130B**. [Alphabet, Alphabet_10k_2025.pdf, PDF page 87] [Alphabet, Alphabet_10k_2025.pdf, PDF page 84]
+- **Amazon:** $8.295B − $19.087B = **−$10.792B**. [Amazon, Amazon_10k_2025.pdf, PDF page 104]
+
+**Only Microsoft had a positive 2025 cash-tax gap.**
+
+Comparability limitation: Microsoft’s fiscal year ended **June 30, 2025**, while Alphabet’s and Amazon’s years ended **December 31, 2025**.",company_balanced_mmr+focused_evidence+table_supplement+evidence_pages,"Alphabet/Google p.85 (Alphabet_10k_2025.pdf, table_page); Alphabet/Google p.87 (Alphabet_10k_2025.pdf, table_page); Amazon p.104 (Amazon_10k_2025.pdf, table_page); Amazon p.105 (Amazon_10k_2025.pdf, table_page); Microsoft p.125 (Microsoft_10K_2025.pdf, table_page); Microsoft p.127 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.71 (Alphabet_10k_2025.pdf, table_page); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, table_page); Amazon p.80 (Amazon_10k_2025.pdf, table_page); Amazon p.74 (Amazon_10k_2025.pdf, table_page); Microsoft p.89 (Microsoft_10K_2025.pdf, table_page); Microsoft p.118 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.85 (Alphabet_10k_2025.pdf, page_text); Amazon p.105 (Amazon_10k_2025.pdf, page_text); Microsoft p.125 (Microsoft_10K_2025.pdf, page_text); Alphabet/Google p.84 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.60 (Alphabet_10k_2025.pdf, page_text); Amazon p.104 (Amazon_10k_2025.pdf, page_text); Amazon p.103 (Amazon_10k_2025.pdf, page_text); Microsoft p.127 (Microsoft_10K_2025.pdf, page_text); Alphabet/Google p.87 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.83 (Alphabet_10k_2025.pdf, page_text); Amazon p.51 (Amazon_10k_2025.pdf, page_text); Amazon p.59 (Amazon_10k_2025.pdf, page_text); Microsoft p.91 (Microsoft_10K_2025.pdf, table_page); Microsoft p.148 (Microsoft_10K_2025.pdf, page_text)",7.95,gpt-5.6-sol,text-embedding-3-large,completed,0,16517,596,178,0,17113,
+6,"Based on Amazon's profit growth in recent years, please predict Amazon's profit in 2026.","The retrieved filing does **not provide full-year 2026 net-income guidance**, so a reliable filing-based prediction is unavailable. Amazon only guides to **Q1 2026 operating income of $16.5–$21.5 billion**, which is a different metric and period from annual net income. [Amazon, Amazon_10k_2025.pdf, PDF page 54]
+
+A simple mechanical extrapolation using the latest annual net-income growth would be:
+
+- FY2024 net income: **$59.248 billion**
+- FY2025 net income: **$77.670 billion**
+- FY2025 growth: \(($77.670 − $59.248) ÷ $59.248\) = **31.1%**
+- Illustrative FY2026 net income: **$77.670 × 1.311 ≈ $101.8 billion**
+
+Thus, **about $102 billion of FY2026 net income** is a trend-based scenario—not Amazon guidance or a filing forecast. It assumes the unusually strong 2025 growth rate repeats and therefore should be treated cautiously. [Amazon, Amazon_10k_2025.pdf, PDF page 61]",company_filtered_similarity+table_supplement,"Amazon p.74 (Amazon_10k_2025.pdf, table_page); Amazon p.43 (Amazon_10k_2025.pdf, table_page); Amazon p.61 (Amazon_10k_2025.pdf, page_text); Amazon p.54 (Amazon_10k_2025.pdf, table_page); Amazon p.61 (Amazon_10k_2025.pdf, table_page); Amazon p.54 (Amazon_10k_2025.pdf, page_text); Amazon p.111 (Amazon_10k_2025.pdf, page_text)",13.41,gpt-5.6-sol,text-embedding-3-large,completed,0,4990,757,509,0,5747,
+7,"According to Microsoft’s FY2025 10-K, what was its FY2024 Productivity and Business Processes segment revenue?","Microsoft’s **Productivity and Business Processes** segment revenue for **FY2024 (year ended June 30, 2024)** was **$106,820 million ($106.820 billion)**. [Microsoft, Microsoft_10K_2025.pdf, PDF page 143]",company_filtered_similarity+focused_evidence+table_supplement,"Microsoft p.67 (Microsoft_10K_2025.pdf, table_page); Microsoft p.143 (Microsoft_10K_2025.pdf, table_page); Microsoft p.94 (Microsoft_10K_2025.pdf, page_text); Microsoft p.63 (Microsoft_10K_2025.pdf, page_text); Microsoft p.143 (Microsoft_10K_2025.pdf, page_text); Microsoft p.9 (Microsoft_10K_2025.pdf, page_text); Microsoft p.68 (Microsoft_10K_2025.pdf, page_text); Microsoft p.68 (Microsoft_10K_2025.pdf, table_page)",1.49,gpt-5.6-sol,text-embedding-3-large,completed,0,4754,62,0,0,4816,
+8,"Based only on the latest 10-K filings, identify the largest reportable business segment by revenue for Alphabet, Amazon, and Microsoft. For each company, calculate that segment’s revenue as a percentage of the company’s consolidated revenue, round the result to one decimal place, and rank the three companies from most to least dependent on their largest segment. Show the fiscal year and revenue figures used in your calculation. Use reportable segments rather than individual products or revenue categories.","### Largest reportable segment by revenue
+
+| Rank | Company | Fiscal period | Largest reportable segment | Segment revenue | Consolidated revenue | Calculation | Share |
+|---:|---|---|---|---:|---:|---|---:|
+| 1 | **Alphabet** | Year ended Dec. 31, 2025 | Google Services | $342,721 million | $402,836 million | $342,721 ÷ $402,836 × 100 | **85.1%** |
+| 2 | **Amazon** | Year ended Dec. 31, 2025 | North America | $426,305 million | $716,924 million | $426,305 ÷ $716,924 × 100 | **59.5%** |
+| 3 | **Microsoft** | Fiscal year ended June 30, 2025 | Productivity and Business Processes | $120,810 million | $281,724 million | $120,810 ÷ $281,724 × 100 | **42.9%** |
+
+**Ranking from most to least dependent on its largest segment:**  
+**Alphabet (85.1%) → Amazon (59.5%) → Microsoft (42.9%).**
+
+Sources:
+
+- Alphabet’s 2025 segment table reports Google Services revenue of **$342.721 billion**, compared with consolidated revenue of **$402.836 billion**. [Alphabet, Alphabet_10k_2025.pdf, PDF page 88]
+- Amazon’s 2025 segment table reports North America net sales of **$426.305 billion**, compared with consolidated net sales of **$716.924 billion**. [Amazon, Amazon_10k_2025.pdf, PDF page 109]
+- Microsoft’s fiscal 2025 segment table reports Productivity and Business Processes revenue of **$120.810 billion**, compared with total revenue of **$281.724 billion**. [Microsoft, Microsoft_10K_2025.pdf, PDF page 68]
+
+**Comparability limitation:** Alphabet and Amazon use calendar years ending December 31, while Microsoft’s fiscal year ends June 30. Their segment definitions also differ, so the percentages measure concentration in each company’s own largest reportable segment rather than economically identical businesses.",company_balanced_mmr+focused_evidence+table_supplement+evidence_pages,"Alphabet/Google p.88 (Alphabet_10k_2025.pdf, table_page); Amazon p.43 (Amazon_10k_2025.pdf, table_page); Microsoft p.68 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, table_page); Amazon p.107 (Amazon_10k_2025.pdf, table_page); Amazon p.111 (Amazon_10k_2025.pdf, table_page); Microsoft p.87 (Microsoft_10K_2025.pdf, table_page); Microsoft p.140 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.50 (Alphabet_10k_2025.pdf, page_text); Amazon p.116 (Amazon_10k_2025.pdf, page_text); Amazon p.61 (Amazon_10k_2025.pdf, page_text); Microsoft p.61 (Microsoft_10K_2025.pdf, page_text); Microsoft p.68 (Microsoft_10K_2025.pdf, page_text); Amazon p.107 (Amazon_10k_2025.pdf, page_text); Amazon p.111 (Amazon_10k_2025.pdf, page_text); Microsoft p.143 (Microsoft_10K_2025.pdf, page_text); Alphabet/Google p.88 (Alphabet_10k_2025.pdf, page_text); Amazon p.109 (Amazon_10k_2025.pdf, table_page); Amazon p.65 (Amazon_10k_2025.pdf, page_text); Microsoft p.144 (Microsoft_10K_2025.pdf, table_page); Microsoft p.63 (Microsoft_10K_2025.pdf, page_text)",8.6,gpt-5.6-sol,text-embedding-3-large,completed,0,12632,636,166,0,13268,
+9,"Out of Amazon, Microsoft, Alphabet, which company had the highest profit and revenue for 2024 and 2025. Out of these companies, which companies would be the best investment for both institutional and retail investor?","### Highest revenue and profit
+
+I interpret **“profit” as reported net income**. All amounts below are **USD millions**.
+
+| Reporting period | Company | Revenue | Net income |
+|---|---:|---:|---:|
+| **2024** | Amazon — year ended Dec. 31, 2024 | **$637,959** | $59,248 |
+|  | Alphabet — year ended Dec. 31, 2024 | $350,018 | **$100,118** |
+|  | Microsoft — fiscal year ended June 30, 2024 | $245,122 | $88,136 |
+| **2025** | Amazon — year ended Dec. 31, 2025 | **$716,924** | $77,670 |
+|  | Alphabet — year ended Dec. 31, 2025 | $402,836 | **$132,170** |
+|  | Microsoft — fiscal year ended June 30, 2025 | $281,724 | $101,832 |
+
+Sources: [Amazon, Amazon_10k_2025.pdf, PDF page 109]; [Alphabet, Alphabet_10k_2025.pdf, PDF page 33]; [Microsoft, Microsoft_10K_2025.pdf, PDF page 67].
+
+**Results:**
+
+- **Highest revenue in both 2024 and 2025: Amazon**
+  - 2024: **$637.959 billion**
+  - 2025: **$716.924 billion**
+- **Highest net income in both 2024 and 2025: Alphabet**
+  - 2024: **$100.118 billion**
+  - 2025: **$132.170 billion**
+
+No single company had both the highest revenue and highest net income.
+
+### Best investment
+
+The retrieved filing context is **insufficient to determine which company is the best investment for either institutional or retail investors**. Although Alphabet reported the highest net income and Amazon the highest revenue, investment selection also requires evidence not provided here, including:
+
+- share price and valuation multiples;
+- expected future growth and cash flows;
+- balance-sheet strength and capital requirements;
+- risk, volatility, and dividend or repurchase policies;
+- investor objectives, time horizon, and risk tolerance.
+
+Therefore, declaring Amazon, Microsoft, or Alphabet the “best investment” would not be supported by the supplied evidence. Also, direct annual comparisons are imperfect because **Amazon and Alphabet report calendar years ending December 31, while Microsoft’s fiscal year ends June 30**.",company_balanced_mmr+table_supplement,"Alphabet/Google p.66 (Alphabet_10k_2025.pdf, table_page); Alphabet/Google p.37 (Alphabet_10k_2025.pdf, table_page); Amazon p.107 (Amazon_10k_2025.pdf, table_page); Amazon p.43 (Amazon_10k_2025.pdf, table_page); Microsoft p.140 (Microsoft_10K_2025.pdf, table_page); Microsoft p.9 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.33 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.62 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.29 (Alphabet_10k_2025.pdf, page_text); Amazon p.109 (Amazon_10k_2025.pdf, table_page); Amazon p.54 (Amazon_10k_2025.pdf, page_text); Amazon p.63 (Amazon_10k_2025.pdf, page_text); Microsoft p.143 (Microsoft_10K_2025.pdf, page_text); Microsoft p.118 (Microsoft_10K_2025.pdf, page_text); Microsoft p.67 (Microsoft_10K_2025.pdf, page_text)",11.24,gpt-5.6-sol,text-embedding-3-large,completed,0,9422,781,248,0,10203,
+10,"Using each company's most recent 10-K, sum the total capital expenditures (reported as 'purchases of property and equipment') across Alphabet, Amazon, and Microsoft. State each figure with its correct units, compute capex as a percentage of each company's revenue, and identify which company is investing most aggressively in AI/cloud infrastructure on a relative basis.","### Capital expenditures and revenue
+
+Capex is taken from each company’s cash-flow statement. Microsoft uses the equivalent caption **“Additions to property and equipment,”** rather than “Purchases of property and equipment.” Cash outflows are presented below as positive investment amounts.
+
+| Company | Fiscal period | Capex caption | Capex | Revenue | Capex ÷ revenue |
+|---|---|---|---:|---:|---:|
+| Alphabet | Year ended Dec. 31, 2025 | Purchases of property and equipment | **$91,447 million** | **$402,836 million** | **22.70%** |
+| Amazon | Year ended Dec. 31, 2025 | Purchases of property and equipment | **$131,819 million** | **$716,924 million** | **18.39%** |
+| Microsoft | Year ended June 30, 2025 | Additions to property and equipment | **$64,551 million** | **$281,724 million** | **22.91%** |
+
+Sources: [Alphabet, Alphabet_10k_2025.pdf, PDF pages 53 and 88]; [Amazon, Amazon_10k_2025.pdf, PDF pages 60 and 43]; [Microsoft, Microsoft_10K_2025.pdf, PDF pages 91 and 68].
+
+### Calculations
+
+- **Alphabet:** $91,447 million ÷ $402,836 million = **22.70%**
+- **Amazon:** $131,819 million ÷ $716,924 million = **18.39%**
+- **Microsoft:** $64,551 million ÷ $281,724 million = **22.91%**
+
+**Combined capex:**
+
+\[
+\$91{,}447M+\$131{,}819M+\$64{,}551M
+=\boxed{\$287{,}817\text{ million}}
+\]
+
+That equals **$287.817 billion**.
+
+### Relative AI/cloud investment conclusion
+
+Using **total property-and-equipment cash expenditures as a percentage of consolidated revenue** as the requested relative-investment proxy, **Microsoft ranks highest at 22.91%**, narrowly above Alphabet at 22.70%; Amazon is 18.39%.
+
+This does **not** mean all reported capex was exclusively for AI/cloud infrastructure. The filings only provide broader support:
+
+- Alphabet attributes its increase in property-and-equipment purchases primarily to technical infrastructure investment. [Alphabet, Alphabet_10k_2025.pdf, PDF page 39]
+- Amazon says its cash capital expenditures primarily reflected technology infrastructure investments, the majority supporting AWS growth. [Amazon, Amazon_10k_2025.pdf, PDF page 41]
+- Microsoft says capital expenditures support cloud offerings and AI infrastructure and training. [Microsoft, Microsoft_10K_2025.pdf, PDF page 80]
+
+Comparability is also limited because Microsoft’s fiscal year ended **June 30, 2025**, whereas Alphabet’s and Amazon’s ended **December 31, 2025**.",company_balanced_mmr+focused_evidence+table_supplement+evidence_pages,"Alphabet/Google p.53 (Alphabet_10k_2025.pdf, table_page); Alphabet/Google p.88 (Alphabet_10k_2025.pdf, table_page); Amazon p.60 (Amazon_10k_2025.pdf, table_page); Amazon p.43 (Amazon_10k_2025.pdf, table_page); Microsoft p.91 (Microsoft_10K_2025.pdf, table_page); Microsoft p.68 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.71 (Alphabet_10k_2025.pdf, table_page); Amazon p.65 (Amazon_10k_2025.pdf, table_page); Microsoft p.118 (Microsoft_10K_2025.pdf, table_page); Microsoft p.9 (Microsoft_10K_2025.pdf, table_page); Alphabet/Google p.39 (Alphabet_10k_2025.pdf, page_text); Alphabet/Google p.53 (Alphabet_10k_2025.pdf, page_text); Amazon p.60 (Amazon_10k_2025.pdf, page_text); Amazon p.41 (Amazon_10k_2025.pdf, page_text); Microsoft p.77 (Microsoft_10K_2025.pdf, page_text); Microsoft p.91 (Microsoft_10K_2025.pdf, page_text); Alphabet/Google p.29 (Alphabet_10k_2025.pdf, page_text); Amazon p.112 (Amazon_10k_2025.pdf, table_page); Amazon p.47 (Amazon_10k_2025.pdf, page_text); Microsoft p.80 (Microsoft_10K_2025.pdf, page_text); Microsoft p.67 (Microsoft_10K_2025.pdf, page_text); Microsoft p.117 (Microsoft_10K_2025.pdf, page_text)",18.28,gpt-5.6-sol,text-embedding-3-large,completed,0,12951,1064,423,0,14015,
