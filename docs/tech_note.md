@@ -171,7 +171,9 @@ The same package supports four use patterns:
 
 Retrieval parameters are intentionally frozen. The model ID may be changed for access or controlled comparison, but changing chunk or retrieval settings would no longer reproduce the reported final configuration.
 
-The repository includes regression tests for issuer routing, query classification, exact-financial expansions, comparison behavior, PDF text cleaning, and company identification. GitHub Actions installs the package and runs these tests without API calls.
+The repository includes deterministic regression and failure-path tests for configuration, filing validation, issuer routing, query classification, exact-financial expansions, comparison behavior, PDF cleanup and fallback logging, context/source boundaries, safe cache persistence, credential isolation, and holdout protection. GitHub Actions validates dependencies, lint, formatting, tests, and installed CLI packaging on Python 3.11-3.13 without making billable API calls.
+
+The post-experiment engineering refactor also replaced the earlier pickle-based FAISS persistence path with a native FAISS index plus validated JSON document mapping. Source PDF bytes and embedding/chunk configuration form the cache fingerprint. This preserves local reuse without deserializing executable Python objects. See [`architecture.md`](architecture.md) for the current component and failure boundaries.
 
 ## 6. Strengths, weaknesses, and hallucination boundaries
 
@@ -235,7 +237,7 @@ The roles describe primary ownership; model testing, review, and final decisions
 
 ## 10. Recommended next steps
 
-The current code should be frozen for the final submission. The highest-value next action is not another round of tuning on the same ten questions; it is running the 15-question final unseen holdout, recording failures without changing the code, and reporting that result separately. Future engineering work could add table-structure extraction, automated citation entailment, hybrid lexical/vector retrieval, reranking, evaluation confidence intervals, and a live-data tool clearly separated from filing evidence.
+After the engineering refactor is frozen and committed, the highest-value evaluation action is not another round of tuning on the same ten questions; it is running the 15-question final unseen holdout once, recording failures without changing the code, and reporting that result separately. Future engineering work could add a maintained standalone FAISS integration, stronger table-structure extraction, automated citation entailment, hybrid lexical/vector retrieval, reranking, evaluation confidence intervals, and a live-data tool clearly separated from filing evidence.
 
 ## Conclusion
 

@@ -4,6 +4,10 @@ An evidence-grounded retrieval-augmented generation system for the 2025 Form 10-
 
 ![Final RAG architecture](docs/images/architecture.png)
 
+The implementation is organized as one reusable package shared by every interface. See
+[`docs/architecture.md`](docs/architecture.md) for the current component boundaries, index
+lifecycle, evidence contract, failure policy, and design trade-offs.
+
 ## What it can do
 
 - Answer direct, calculated, comparative, multilingual, qualitative, and adversarial questions using only the supplied filings.
@@ -101,6 +105,23 @@ Add `--verbose` for diagnostic logs. Each run creates a CSV and a readable Markd
 
 Two reference answers are labeled `Needs review` because one asks for a future-profit scenario and one asks for investment selection; the system should state their evidence limits rather than present them as filing facts.
 
+## Testing and CI
+
+The deterministic suite does not require an API key:
+
+```bash
+pytest
+ruff check .
+ruff format --check .
+```
+
+Tests cover configuration validation, filing identity and period checks, PDF cleanup and table
+fallbacks, company/query routing, financial evidence selection, context/source boundaries, safe
+cache round trips and rejection paths, explicit credential handling, and holdout safeguards.
+GitHub Actions runs dependency validation, lint, formatting, all tests, and an installed-CLI smoke
+test on Python 3.11, 3.12, and 3.13. Live embedding and answer-generation tests are intentionally
+excluded from CI because they are billable and model access depends on the account.
+
 ## Development method: questions drove every iteration
 
 ![Question-driven iterative optimization](docs/images/question_driven_iteration.png)
@@ -159,7 +180,7 @@ notebooks/               Colab workflow
 results/                 Curated final answers and experiment summaries
 src/financial_rag/       Final reusable RAG package and terminal interface
 tests/                   Retrieval and PDF-processing regression tests
-.github/workflows/       Automated test workflow
+.github/workflows/       Python 3.11-3.13 quality and test workflow
 ```
 
 ## Evidence boundary and limitations
