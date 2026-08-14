@@ -35,6 +35,6 @@ jobs:
       - name: Check formatting
         run: ruff format --check .
       - name: Run tests
-        run: pytest
+        run: python -m pytest
       - name: Smoke-test CLI packaging
         run: financial-rag-chat --help
