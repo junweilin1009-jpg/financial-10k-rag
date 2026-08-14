@@ -33,6 +33,8 @@ export OPENAI_API_KEY="your-key-here"   # Windows PowerShell: $env:OPENAI_API_KE
 
 Never commit a real API key. `.env` is ignored; `.env.example` documents the expected variable.
 
+Runtime and development dependencies are declared only in `pyproject.toml`; the project does not maintain a second handwritten requirements file.
+
 ### Streamlit website
 
 ```bash

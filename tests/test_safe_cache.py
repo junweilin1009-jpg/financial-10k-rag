@@ -34,11 +34,6 @@ class SafeCacheTests(unittest.TestCase):
         )
 
     def test_round_trip_uses_faiss_and_json_only(self) -> None:
-        payload = cache_payload(
-            self.engine.vector_store,
-            self.engine.table_pages,
-            {"indexed_documents": 2},
-        )
         with tempfile.TemporaryDirectory() as raw_dir:
             cache_dir = Path(raw_dir)
             write_cache(

@@ -14,7 +14,9 @@ from .filings import validate_filing_set
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--question", help="Answer one question and exit; omit for an interactive session.")
+    parser.add_argument(
+        "--question", help="Answer one question and exit; omit for an interactive session."
+    )
     parser.add_argument("--model", default=DEFAULT_LLM_MODEL, help="OpenAI model ID.")
     parser.add_argument("--pdf-dir", type=Path, default=Path("data/10k"))
     parser.add_argument("--cache-dir", type=Path, default=Path("cache/faiss"))

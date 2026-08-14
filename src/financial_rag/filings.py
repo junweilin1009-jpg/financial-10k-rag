@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 import pdfplumber
 
@@ -95,9 +95,7 @@ def validate_filing_set(pdf_paths: Sequence[str | Path]) -> dict[Path, FilingMet
     """Require exactly one verified filing for every supported company."""
     paths = [Path(path).resolve() for path in pdf_paths]
     if len(paths) != len(EXPECTED_FILINGS):
-        raise ValueError(
-            f"Expected exactly {len(EXPECTED_FILINGS)} PDFs; found {len(paths)}."
-        )
+        raise ValueError(f"Expected exactly {len(EXPECTED_FILINGS)} PDFs; found {len(paths)}.")
 
     filings: dict[Path, FilingMetadata] = {}
     by_company: dict[str, Path] = {}
@@ -105,9 +103,7 @@ def validate_filing_set(pdf_paths: Sequence[str | Path]) -> dict[Path, FilingMet
         metadata = inspect_filing(path)
         if metadata.company in by_company:
             first = by_company[metadata.company]
-            raise ValueError(
-                f"Duplicate {metadata.company} filings: {first.name}, {path.name}."
-            )
+            raise ValueError(f"Duplicate {metadata.company} filings: {first.name}, {path.name}.")
         filings[path] = metadata
         by_company[metadata.company] = path
 

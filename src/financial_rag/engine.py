@@ -7,9 +7,9 @@ import json
 import os
 import re
 import time
+from collections.abc import Sequence
 from dataclasses import asdict
 from pathlib import Path
-from typing import Sequence
 
 import pdfplumber
 from langchain_community.vectorstores import FAISS
@@ -170,11 +170,13 @@ class FinancialRAG:
                 self.embeddings,
             )
             self._refresh_evidence_pages(paths)
-            self.build_stats.update({
-                "cache_hit": True,
-                "cache_fingerprint": fingerprint,
-                "cache_path": str(cache_path),
-            })
+            self.build_stats.update(
+                {
+                    "cache_hit": True,
+                    "cache_fingerprint": fingerprint,
+                    "cache_path": str(cache_path),
+                }
+            )
             return self.build_stats
 
         stats = self.build(paths)
@@ -182,11 +184,13 @@ class FinancialRAG:
         if self.vector_store is None:
             raise RuntimeError("Vector store was not created during build.")
         write_cache(cache_path, self.vector_store, self.table_pages, stats)
-        self.build_stats.update({
-            "cache_hit": False,
-            "cache_fingerprint": fingerprint,
-            "cache_path": str(cache_path),
-        })
+        self.build_stats.update(
+            {
+                "cache_hit": False,
+                "cache_fingerprint": fingerprint,
+                "cache_path": str(cache_path),
+            }
+        )
         return self.build_stats
 
     @staticmethod
@@ -197,13 +201,10 @@ class FinancialRAG:
         retrieval remains useful when a future filing shifts pagination.
         """
         lower = text.lower()
-        tax_reconciliation = (
-            "federal statutory" in lower
-            and (
-                "effective rate" in lower
-                or "effective income tax rate" in lower
-                or "items accounting for differences" in lower
-            )
+        tax_reconciliation = "federal statutory" in lower and (
+            "effective rate" in lower
+            or "effective income tax rate" in lower
+            or "items accounting for differences" in lower
         )
         cash_tax = (
             "cash paid for income taxes" in lower
@@ -211,10 +212,9 @@ class FinancialRAG:
             or "total cash taxes paid, net of refunds" in lower
         )
         cash_flow_capex = (
-            ("purchases of property and equipment" in lower
-             or "additions to property and equipment" in lower)
-            and ("investing activities" in lower or "cash flows" in lower)
-        )
+            "purchases of property and equipment" in lower
+            or "additions to property and equipment" in lower
+        ) and ("investing activities" in lower or "cash flows" in lower)
         segment_labels = {
             "Alphabet/Google": ("google services", "google cloud", "other bets"),
             "Amazon": ("north america", "international", "aws"),
@@ -225,11 +225,15 @@ class FinancialRAG:
             ),
         }
         labels = segment_labels.get(company, ())
-        complete_segment_table = bool(labels) and all(label in lower for label in labels) and (
-            "segment revenue" in lower
-            or "net sales by group" in lower
-            or "segment information" in lower
-            or ("revenue" in lower and "operating income" in lower)
+        complete_segment_table = (
+            bool(labels)
+            and all(label in lower for label in labels)
+            and (
+                "segment revenue" in lower
+                or "net sales by group" in lower
+                or "segment information" in lower
+                or ("revenue" in lower and "operating income" in lower)
+            )
         )
         return tax_reconciliation or cash_tax or cash_flow_capex or complete_segment_table
 
@@ -271,19 +275,21 @@ class FinancialRAG:
                         page = pdf.pages[page_index]
                         raw_text = page.extract_text(layout=True) or page.extract_text() or ""
                         text = clean_pdf_text(raw_text)
-                        self.evidence_pages.append(Document(
-                            page_content=text,
-                            metadata={
-                                "source_file": path.name,
-                                "source": str(path),
-                                "company": company,
-                                "fiscal_year_end": infer_fiscal_year_end(company),
-                                "page_number": page_number,
-                                # Match the stored table-page type so dedupe can
-                                # remove equivalent complete-page duplicates.
-                                "doc_type": "table_page",
-                            },
-                        ))
+                        self.evidence_pages.append(
+                            Document(
+                                page_content=text,
+                                metadata={
+                                    "source_file": path.name,
+                                    "source": str(path),
+                                    "company": company,
+                                    "fiscal_year_end": infer_fiscal_year_end(company),
+                                    "page_number": page_number,
+                                    # Match the stored table-page type so dedupe can
+                                    # remove equivalent complete-page duplicates.
+                                    "doc_type": "table_page",
+                                },
+                            )
+                        )
             except Exception:
                 continue
 
@@ -294,22 +300,30 @@ class FinancialRAG:
     ) -> list[Document]:
         """Select complete evidence pages required by common financial tasks."""
         lower = question.lower()
-        needs_tax_rate = bool(re.search(
-            r"effective tax rate|statutory.*tax rate|tax rate.*reconcil",
-            lower,
-        ))
-        needs_cash_tax = bool(re.search(
-            r"cash[- ]tax gap|taxes paid.*provision|provision.*taxes paid",
-            lower,
-        ))
-        needs_segments = bool(re.search(
-            r"reportable.*segment|largest.*segment|segment.*percentage",
-            lower,
-        ))
-        needs_capex = bool(re.search(
-            r"capital expenditures|\bcapex\b|purchases of property and equipment",
-            lower,
-        ))
+        needs_tax_rate = bool(
+            re.search(
+                r"effective tax rate|statutory.*tax rate|tax rate.*reconcil",
+                lower,
+            )
+        )
+        needs_cash_tax = bool(
+            re.search(
+                r"cash[- ]tax gap|taxes paid.*provision|provision.*taxes paid",
+                lower,
+            )
+        )
+        needs_segments = bool(
+            re.search(
+                r"reportable.*segment|largest.*segment|segment.*percentage",
+                lower,
+            )
+        )
+        needs_capex = bool(
+            re.search(
+                r"capital expenditures|\bcapex\b|purchases of property and equipment",
+                lower,
+            )
+        )
         if not any((needs_tax_rate, needs_cash_tax, needs_segments, needs_capex)):
             return []
 
@@ -377,28 +391,34 @@ class FinancialRAG:
                         ),
                     }
                     labels = segment_labels.get(company, ())
-                    revenue_score = 180 * bool(
-                        labels and all(label in text for label in labels)
+                    revenue_score = 180 * bool(labels and all(label in text for label in labels))
+                    revenue_score += 100 * any(
+                        marker in text
+                        for marker in (
+                            "total revenue",
+                            "consolidated revenue",
+                            "consolidated net sales",
+                            "total net sales",
+                        )
                     )
-                    revenue_score += 100 * any(marker in text for marker in (
-                        "total revenue",
-                        "consolidated revenue",
-                        "consolidated net sales",
-                        "total net sales",
-                    ))
                     # Distinguish an actual numeric revenue table from an MD&A
                     # page that merely names all segments and mentions total
                     # revenue in prose.
-                    revenue_score += 180 * any(marker in text for marker in (
-                        "segment results of operations",
-                        "following table presents revenue",
-                        "net sales information is as follows",
-                        "information on reportable segments and reconciliation",
-                    ))
-                    revenue_score += 200 * bool(re.search(
-                        r"(?:total\s+)?(?:revenues?|net sales)\s+\$\s*[\d,]{4,}",
-                        text,
-                    ))
+                    revenue_score += 180 * any(
+                        marker in text
+                        for marker in (
+                            "segment results of operations",
+                            "following table presents revenue",
+                            "net sales information is as follows",
+                            "information on reportable segments and reconciliation",
+                        )
+                    )
+                    revenue_score += 200 * bool(
+                        re.search(
+                            r"(?:total\s+)?(?:revenues?|net sales)\s+\$\s*[\d,]{4,}",
+                            text,
+                        )
+                    )
                     numeric_score = min(80, sum(character.isdigit() for character in text) // 4)
                     if capex_score:
                         capex_scored.append((capex_score + numeric_score, doc))
@@ -433,7 +453,9 @@ class FinancialRAG:
             selected.extend(doc for _score, doc in scored[:per_company])
         return selected
 
-    def _search(self, query: str, k: int, company: str | None = None, mmr: bool = False) -> list[Document]:
+    def _search(
+        self, query: str, k: int, company: str | None = None, mmr: bool = False
+    ) -> list[Document]:
         if self.vector_store is None:
             raise RuntimeError("Build the vector store before asking questions.")
         metadata_filter = {"company": company} if company else None
@@ -465,8 +487,10 @@ class FinancialRAG:
     def _table_supplements(self, query: str, companies: Sequence[str]) -> list[Document]:
         query_lower = query.lower()
         query_terms = {
-            term for term in re.findall(r"[a-z0-9]+", query_lower)
-            if len(term) > 2 and term not in {"what", "which", "from", "with", "that", "this", "year"}
+            term
+            for term in re.findall(r"[a-z0-9]+", query_lower)
+            if len(term) > 2
+            and term not in {"what", "which", "from", "with", "that", "this", "year"}
         }
         requested_numbers = {
             match.replace(",", "")
@@ -474,7 +498,9 @@ class FinancialRAG:
                 r"(?<![\d,.])\d[\d,]*(?:\.\d+)?(?![\d,.])",
                 query_lower,
             )
-            if not (match.replace(",", "").isdigit() and 1900 <= int(match.replace(",", "")) <= 2100)
+            if not (
+                match.replace(",", "").isdigit() and 1900 <= int(match.replace(",", "")) <= 2100
+            )
             and len(match.replace(",", "")) >= 4
         }
         requested_segments = {
@@ -489,10 +515,14 @@ class FinancialRAG:
             "current assets" in query_lower and "current liabilities" in query_lower
         )
         needs_revenue = bool(re.search(r"\brevenue\b|\bnet sales\b|\bmargin\b", query_lower))
-        needs_operating_income = bool(re.search(r"operating income|operating loss|\bmargin\b", query_lower))
+        needs_operating_income = bool(
+            re.search(r"operating income|operating loss|\bmargin\b", query_lower)
+        )
         needs_net_income = "net income" in query_lower
         needs_total_revenue = "total revenue" in query_lower
-        needs_azure_growth = "azure" in query_lower and bool(re.search(r"growth|grew|faster|rate", query_lower))
+        needs_azure_growth = "azure" in query_lower and bool(
+            re.search(r"growth|grew|faster|rate", query_lower)
+        )
         needs_subsequent_unrealized_gain = (
             "january 2026" in query_lower and "unrealized gain" in query_lower
         )
@@ -513,19 +543,25 @@ class FinancialRAG:
                     score += 4
                 if "revenue" in query_terms and "revenue" in text_lower:
                     score += 2
-                if needs_total_revenue and any(marker in text_lower for marker in (
-                    "total revenue",
-                    "consolidated revenues",
-                    "consolidated net sales",
-                )):
+                if needs_total_revenue and any(
+                    marker in text_lower
+                    for marker in (
+                        "total revenue",
+                        "consolidated revenues",
+                        "consolidated net sales",
+                    )
+                ):
                     score += 50
                 if needs_net_income and "net income" in text_lower:
                     score += 15
-                    if any(marker in text_lower for marker in (
-                        "income statements",
-                        "summary results of operations",
-                        "cash flows statements",
-                    )):
+                    if any(
+                        marker in text_lower
+                        for marker in (
+                            "income statements",
+                            "summary results of operations",
+                            "cash flows statements",
+                        )
+                    ):
                         score += 35
                     if "pro forma" in text_lower:
                         score -= 30
@@ -605,7 +641,9 @@ class FinancialRAG:
                             score += 40
                 scored.append((score, doc))
             scored.sort(key=lambda item: item[0], reverse=True)
-            supplements.extend(doc for score, doc in scored[: self.config.table_supplement_k] if score > 0)
+            supplements.extend(
+                doc for score, doc in scored[: self.config.table_supplement_k] if score > 0
+            )
         return supplements
 
     @staticmethod
@@ -667,16 +705,12 @@ class FinancialRAG:
         if comparison:
             companies = targets or list(PROJECT_COMPANIES)
             documents = []
-            per_company_k = (
-                self.config.company_k if exact_financial else self.config.qualitative_k
-            )
+            per_company_k = self.config.company_k if exact_financial else self.config.qualitative_k
             risk_synthesis = is_ai_risk_synthesis(question)
             for company in companies:
                 if risk_synthesis and not exact_financial:
                     for focus_query in AI_RISK_FOCUS_QUERIES:
-                        documents.extend(
-                            self._search(focus_query, 2, company=company, mmr=False)
-                        )
+                        documents.extend(self._search(focus_query, 2, company=company, mmr=False))
                 documents.extend(self._search(query, per_company_k, company=company, mmr=True))
             strategy = "company_balanced_mmr"
             if not exact_financial:
@@ -744,9 +778,7 @@ class FinancialRAG:
         documents, strategy, companies = self.retrieve(question)
         context, context_documents = self._format_context(documents)
         if not context_documents:
-            raise ValueError(
-                "No retrieved evidence fit within the configured context limit."
-            )
+            raise ValueError("No retrieved evidence fit within the configured context limit.")
         human_message = f"Retrieved filing context:\n\n{context}\n\nQuestion:\n{question}"
         messages = [
             ("system", SYSTEM_PROMPT),
@@ -762,14 +794,16 @@ class FinancialRAG:
             and continuation_attempts < self.config.max_continuation_attempts
         ):
             continuation_attempts += 1
-            messages.extend([
-                response,
-                (
-                    "human",
-                    "Continue exactly where the answer stopped. Do not repeat prior text. "
-                    "Finish the requested comparison, conclusion, and citations concisely.",
-                ),
-            ])
+            messages.extend(
+                [
+                    response,
+                    (
+                        "human",
+                        "Continue exactly where the answer stopped. Do not repeat prior text. "
+                        "Finish the requested comparison, conclusion, and citations concisely.",
+                    ),
+                ]
+            )
             response = self.llm.invoke(messages)
             continuation_usage = self._token_usage(response)
             for key in token_usage:
@@ -781,14 +815,16 @@ class FinancialRAG:
         sources: list[SourceReference] = []
         for rank, doc in enumerate(context_documents, start=1):
             metadata = doc.metadata
-            sources.append({
-                "rank": rank,
-                "company": metadata.get("company", ""),
-                "source_file": metadata.get("source_file", metadata.get("source", "")),
-                "page_number": metadata.get("page_number", ""),
-                "doc_type": metadata.get("doc_type", ""),
-                "preview": " ".join(doc.page_content.split())[:800],
-            })
+            sources.append(
+                {
+                    "rank": rank,
+                    "company": metadata.get("company", ""),
+                    "source_file": metadata.get("source_file", metadata.get("source", "")),
+                    "page_number": metadata.get("page_number", ""),
+                    "doc_type": metadata.get("doc_type", ""),
+                    "preview": " ".join(doc.page_content.split())[:800],
+                }
+            )
         result: AnswerResult = {
             "question": question,
             "answer": answer,

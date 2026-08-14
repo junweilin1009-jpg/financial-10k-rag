@@ -21,7 +21,6 @@ from financial_rag import (
 from financial_rag.document_processing import infer_company
 from financial_rag.filings import validate_filing_set
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data" / "10k"
 CACHE_DIR = PROJECT_ROOT / "cache" / "faiss"
@@ -48,7 +47,9 @@ def included_pdfs() -> list[Path]:
 
 def save_uploaded_pdfs(uploaded_files) -> list[Path]:
     if len(uploaded_files) != 3:
-        raise ValueError("Upload exactly three PDFs: one Alphabet, one Amazon, and one Microsoft filing.")
+        raise ValueError(
+            "Upload exactly three PDFs: one Alphabet, one Amazon, and one Microsoft filing."
+        )
 
     files_by_company: dict[str, tuple[str, bytes]] = {}
     digest = hashlib.sha256()
@@ -109,12 +110,14 @@ def conversation_csv(messages: list[dict]) -> str:
     )
     writer.writeheader()
     for message in messages:
-        writer.writerow({
-            "role": message["role"],
-            "content": message["content"],
-            "metadata": message.get("metadata", ""),
-            "source_count": len(message.get("sources", [])),
-        })
+        writer.writerow(
+            {
+                "role": message["role"],
+                "content": message["content"],
+                "metadata": message.get("metadata", ""),
+                "source_count": len(message.get("sources", [])),
+            }
+        )
     return buffer.getvalue()
 
 
@@ -164,7 +167,9 @@ if build_button:
             pdf_paths = save_uploaded_pdfs(uploaded_files) if uploaded_files else included_pdfs()
             missing = [path for path in pdf_paths if not path.exists()]
             if missing:
-                raise FileNotFoundError("Missing included PDF(s): " + ", ".join(path.name for path in missing))
+                raise FileNotFoundError(
+                    "Missing included PDF(s): " + ", ".join(path.name for path in missing)
+                )
             validate_filing_set(pdf_paths)
             config = RAGConfig(llm_model=model_id.strip(), embedding_model=DEFAULT_EMBEDDING_MODEL)
             with st.spinner("Validating the model and loading the financial index..."):
@@ -221,12 +226,14 @@ if question:
                 )
                 st.caption(metadata)
                 render_sources(result["sources"])
-                st.session_state.messages.append({
-                    "role": "assistant",
-                    "content": result["answer"],
-                    "metadata": metadata,
-                    "sources": result["sources"],
-                })
+                st.session_state.messages.append(
+                    {
+                        "role": "assistant",
+                        "content": result["answer"],
+                        "metadata": metadata,
+                        "sources": result["sources"],
+                    }
+                )
             except Exception as exc:
                 st.exception(exc)
 

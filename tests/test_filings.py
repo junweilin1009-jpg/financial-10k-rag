@@ -31,8 +31,7 @@ class FilingValidationTests(unittest.TestCase):
     @patch("financial_rag.filings._cover_text")
     def test_rejects_wrong_reporting_period(self, cover_text) -> None:
         cover_text.return_value = (
-            "FORM 10-K AMAZON.COM, INC. "
-            "For the fiscal year ended December 31, 2024"
+            "FORM 10-K AMAZON.COM, INC. For the fiscal year ended December 31, 2024"
         )
         with self.assertRaisesRegex(ValueError, "not the supported Amazon 2025 filing"):
             inspect_filing(self.pdf_dir / "Amazon_10k_2025.pdf")

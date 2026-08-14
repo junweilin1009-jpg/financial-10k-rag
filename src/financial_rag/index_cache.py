@@ -30,13 +30,15 @@ def load_vector_store(
 
     try:
         mapping = {int(index): str(doc_id) for index, doc_id in raw_mapping.items()}
-        docstore = InMemoryDocstore({
-            str(doc_id): Document(
-                page_content=str(item["page_content"]),
-                metadata=dict(item["metadata"]),
-            )
-            for doc_id, item in documents.items()
-        })
+        docstore = InMemoryDocstore(
+            {
+                str(doc_id): Document(
+                    page_content=str(item["page_content"]),
+                    metadata=dict(item["metadata"]),
+                )
+                for doc_id, item in documents.items()
+            }
+        )
         index = faiss.read_index(str(index_path))
     except (KeyError, TypeError, ValueError, RuntimeError) as exc:
         raise ValueError(f"Cache contents are invalid: {exc}") from exc
@@ -58,8 +60,7 @@ def cache_payload(
         "cache_format": "faiss-json-v2",
         "build_stats": stats,
         "index_to_docstore_id": {
-            str(index): doc_id
-            for index, doc_id in vector_store.index_to_docstore_id.items()
+            str(index): doc_id for index, doc_id in vector_store.index_to_docstore_id.items()
         },
         "documents": {
             doc_id: {
@@ -69,8 +70,7 @@ def cache_payload(
             for doc_id, document in indexed.items()
         },
         "table_pages": [
-            {"page_content": doc.page_content, "metadata": doc.metadata}
-            for doc in table_pages
+            {"page_content": doc.page_content, "metadata": doc.metadata} for doc in table_pages
         ],
     }
 

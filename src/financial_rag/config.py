@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
 DEFAULT_LLM_MODEL = "gpt-5.6-sol"
 DEFAULT_EMBEDDING_MODEL = "text-embedding-3-large"
 CACHE_VERSION = "2026-08-13-safe-cache-v2"

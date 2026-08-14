@@ -10,7 +10,6 @@ from langchain_core.documents import Document
 
 from .filings import FilingMetadata, inspect_filing
 
-
 TABLE_MARKERS = (
     "consolidated balance sheets",
     "consolidated statements of income",

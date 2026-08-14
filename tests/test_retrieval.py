@@ -62,8 +62,7 @@ class TableSupplementTests(unittest.TestCase):
         full_segment_table = table_doc(
             "Amazon",
             109,
-            "AWS net sales 128725. AWS operating expenses 83119. "
-            "AWS operating income 45606.",
+            "AWS net sales 128725. AWS operating expenses 83119. AWS operating income 45606.",
         )
         engine = self.engine_with([revenue_only, full_segment_table])
         query = expand_query("Compare the 2025 operating margins of AWS and Google Cloud.")
@@ -208,24 +207,38 @@ class PriorityEvidenceTests(unittest.TestCase):
         return engine
 
     def test_priority_page_detection_uses_metric_combinations(self) -> None:
-        self.assertTrue(FinancialRAG._is_priority_evidence_page(
-            "Federal statutory rate 21%. Items accounting for differences. Total 19.6%.",
-            "Amazon",
-        ))
-        self.assertTrue(FinancialRAG._is_priority_evidence_page(
-            "Consolidated statements of cash flows. Investing activities. "
-            "Purchases of property and equipment 131819.",
-            "Amazon",
-        ))
-        self.assertFalse(FinancialRAG._is_priority_evidence_page(
-            "We expect to invest in property and equipment next year.",
-            "Amazon",
-        ))
+        self.assertTrue(
+            FinancialRAG._is_priority_evidence_page(
+                "Federal statutory rate 21%. Items accounting for differences. Total 19.6%.",
+                "Amazon",
+            )
+        )
+        self.assertTrue(
+            FinancialRAG._is_priority_evidence_page(
+                "Consolidated statements of cash flows. Investing activities. "
+                "Purchases of property and equipment 131819.",
+                "Amazon",
+            )
+        )
+        self.assertFalse(
+            FinancialRAG._is_priority_evidence_page(
+                "We expect to invest in property and equipment next year.",
+                "Amazon",
+            )
+        )
 
     def test_tax_rate_selects_complete_page_for_each_company(self) -> None:
         docs = [
-            table_doc("Alphabet/Google", 85, "Federal statutory rate 21.0%. Effective income tax rate 16.8%."),
-            table_doc("Amazon", 105, "Federal statutory rate 21.0%. Items accounting for differences. Total 19.6%."),
+            table_doc(
+                "Alphabet/Google",
+                85,
+                "Federal statutory rate 21.0%. Effective income tax rate 16.8%.",
+            ),
+            table_doc(
+                "Amazon",
+                105,
+                "Federal statutory rate 21.0%. Items accounting for differences. Total 19.6%.",
+            ),
             table_doc("Microsoft", 125, "Federal statutory rate 21.0%. Effective rate 17.6%."),
         ]
         engine = self.engine_with(docs)
@@ -237,7 +250,11 @@ class PriorityEvidenceTests(unittest.TestCase):
 
     def test_cash_tax_selects_paid_and_provision_pages(self) -> None:
         docs = [
-            table_doc("Microsoft", 125, "Provision for income taxes 21795. Federal statutory rate. Effective rate."),
+            table_doc(
+                "Microsoft",
+                125,
+                "Provision for income taxes 21795. Federal statutory rate. Effective rate.",
+            ),
             table_doc("Microsoft", 127, "Income taxes paid, net of refunds, were 28.7 billion."),
         ]
         engine = self.engine_with(docs)
@@ -252,11 +269,13 @@ class PriorityEvidenceTests(unittest.TestCase):
 
     def test_capex_prefers_cash_flow_statement_over_narrative(self) -> None:
         narrative = table_doc(
-            "Amazon", 41,
+            "Amazon",
+            41,
             "Cash capital expenditures were 128.3 billion for infrastructure.",
         )
         cash_flow = table_doc(
-            "Amazon", 60,
+            "Amazon",
+            60,
             "Consolidated statements of cash flows. Investing activities. "
             "Purchases of property and equipment 131819.",
         )
@@ -270,23 +289,27 @@ class PriorityEvidenceTests(unittest.TestCase):
     def test_capex_keeps_cash_flow_and_revenue_pages(self) -> None:
         docs = [
             table_doc(
-                "Microsoft", 91,
+                "Microsoft",
+                91,
                 "Consolidated statements of cash flows. Investing activities. "
                 "Additions to property and equipment 64551.",
             ),
             table_doc(
-                "Microsoft", 92,
+                "Microsoft",
+                92,
                 "Property and equipment additions included finance leases and "
                 "other noncash investing activities 70000.",
             ),
             table_doc(
-                "Microsoft", 63,
+                "Microsoft",
+                63,
                 "Our reportable segments are Productivity and Business Processes, "
                 "Intelligent Cloud, and More Personal Computing. International "
                 "operations provide a significant portion of total revenue.",
             ),
             table_doc(
-                "Microsoft", 68,
+                "Microsoft",
+                68,
                 "Segment results of operations. Productivity and Business Processes 120810. "
                 "Intelligent Cloud 106265. More Personal Computing 54649. "
                 "Total revenue $ 281724.",

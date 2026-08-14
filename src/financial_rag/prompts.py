@@ -21,4 +21,3 @@ Rules:
 13. When the question names a financial-statement caption, use that exact row when the issuer uses it. If another issuer uses a clearly equivalent cash-flow caption (for example, "Additions to property and equipment" instead of "Purchases of property and equipment"), use the issuer's exact caption, disclose the wording difference, and keep the comparison. Never substitute a nearby narrative proxy, non-cash addition, payable balance, or broader management metric.
 14. For rate-reconciliation questions, use the final reported rate and preserve the sign and direction of each reconciling factor. If "largest factor" could mean absolute magnitude versus the largest factor driving the rate downward or upward, state the interpretation and any tie.
 """
-

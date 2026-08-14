@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 from langchain_core.documents import Document
 
@@ -84,9 +84,7 @@ def token_usage(message) -> dict[str, int]:
     input_tokens = value("input_tokens", "prompt_tokens")
     output_tokens = value("output_tokens", "completion_tokens")
     total_tokens = value("total_tokens") or input_tokens + output_tokens
-    reasoning_tokens = output_details.get("reasoning", 0) or usage.get(
-        "reasoning_tokens", 0
-    )
+    reasoning_tokens = output_details.get("reasoning", 0) or usage.get("reasoning_tokens", 0)
     cached_input_tokens = (
         input_details.get("cache_read", 0)
         or usage.get("cache_read_input_tokens", 0)
