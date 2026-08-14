@@ -173,8 +173,8 @@ The ten-question cost figures are experimental snapshots, not promises of curren
 
 ```text
 app/                     Streamlit interface
-data/10k/                Three course-provided 2025 filings
-docs/                    Tech note and explanatory figures
+data/                    Three course-provided 2025 filings and integrity manifest
+docs/                    Architecture, tech note, presentation guide, and figures
 evaluation/              Public question bank and batch evaluator
 notebooks/               Colab workflow
 results/                 Curated final answers and experiment summaries
@@ -205,6 +205,6 @@ Johns Hopkins University, Carey Business School — BAAI, AI Essentials
 | Shuying Chen | Error analysis, question-bank review, iterative improvement |
 | Qige Wang | Streamlit/Colab workflow, documentation, presentation support |
 
-Detailed design choices, failed approaches, prompt rules, evaluation chronology, strengths, weaknesses, and hallucination boundaries are documented in [`docs/tech_note.md`](docs/tech_note.md) and [`docs/tech_note.pdf`](docs/tech_note.pdf).
+Detailed design choices, failed approaches, prompt rules, evaluation chronology, strengths, weaknesses, and hallucination boundaries are documented in [`docs/tech_note.md`](docs/tech_note.md) and [`docs/tech_note.pdf`](docs/tech_note.pdf). A separate [`Chinese presentation guide`](docs/Financial_RAG_Presentation_Guide_CN.pdf) supports project walkthrough preparation.
 
 No license is currently granted. The team can add one later if public reuse terms are agreed.
