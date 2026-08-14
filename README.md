@@ -207,4 +207,11 @@ Johns Hopkins University, Carey Business School — BAAI, AI Essentials
 
 Detailed design choices, failed approaches, prompt rules, evaluation chronology, strengths, weaknesses, and hallucination boundaries are documented in [`docs/tech_note.md`](docs/tech_note.md) and [`docs/tech_note.pdf`](docs/tech_note.pdf). A separate [`Chinese presentation guide`](docs/Financial_RAG_Presentation_Guide_CN.pdf) supports project walkthrough preparation.
 
+For interview preparation, [`docs/portfolio_interview_guide.md`](docs/portfolio_interview_guide.md)
+provides verified 30-second, 1-minute, 3-minute, and 5-minute explanations, technical follow-up
+answers, a STAR story, and resume bullets without invented business impact.
+
+The final local verification record and the remaining license, data-rights, remote-CI, and billable
+evaluation gates are tracked in [`docs/release_readiness.md`](docs/release_readiness.md).
+
 No license is currently granted. The team can add one later if public reuse terms are agreed.
