@@ -7,6 +7,8 @@ import csv
 import getpass
 import json
 import os
+import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 from financial_rag import DEFAULT_LLM_MODEL, FinancialRAG, RAGConfig, validate_model
@@ -18,25 +20,47 @@ DEFAULT_BANK = PROJECT_ROOT / "evaluation" / "question_bank.csv"
 DEFAULT_OUTPUT = PROJECT_ROOT / "outputs" / "evaluation_results.csv"
 PDF_DIR = PROJECT_ROOT / "data" / "10k"
 CACHE_DIR = PROJECT_ROOT / "cache" / "faiss"
+HOLDOUT_STAGE = "Final unseen holdout"
+EVALUATION_STAGES = (
+    "Development",
+    "Hidden generalization",
+    HOLDOUT_STAGE,
+    "Cross-group benchmark",
+)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--question-bank", type=Path, default=DEFAULT_BANK)
     selection = parser.add_mutually_exclusive_group(required=True)
-    selection.add_argument("--all", action="store_true", help="Run every public question.")
+    selection.add_argument(
+        "--all",
+        action="store_true",
+        help="Run every non-holdout question.",
+    )
     selection.add_argument(
         "--questions",
         help="Comma-separated question IDs, for example DEV-001,CLASS-010.",
     )
+    selection.add_argument("--stage", choices=EVALUATION_STAGES)
     parser.add_argument("--limit", type=int, help="Run only the first N selected questions.")
     parser.add_argument("--model", default=DEFAULT_LLM_MODEL)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     parser.add_argument("--rebuild-index", action="store_true")
+    parser.add_argument(
+        "--acknowledge-holdout",
+        action="store_true",
+        help="Required when selecting protected holdout questions.",
+    )
     return parser.parse_args()
 
 
-def load_questions(path: Path, requested: str | None, limit: int | None) -> list[dict]:
+def load_questions(
+    path: Path,
+    requested: str | None,
+    stage: str | None,
+    limit: int | None,
+) -> list[dict]:
     with path.open(encoding="utf-8-sig", newline="") as handle:
         rows = list(csv.DictReader(handle))
     if requested:
@@ -45,7 +69,43 @@ def load_questions(path: Path, requested: str | None, limit: int | None) -> list
         missing = ids - {row["question_id"].upper() for row in rows}
         if missing:
             raise ValueError("Question ID(s) not found: " + ", ".join(sorted(missing)))
+    elif stage:
+        rows = [row for row in rows if row["evaluation_stage"] == stage]
+    else:
+        rows = [row for row in rows if row["evaluation_stage"] != HOLDOUT_STAGE]
     return rows[:limit] if limit else rows
+
+
+def require_holdout_acknowledgement(rows: list[dict], acknowledged: bool) -> None:
+    """Prevent accidental execution of the post-freeze holdout."""
+    contains_holdout = any(row["evaluation_stage"] == HOLDOUT_STAGE for row in rows)
+    if contains_holdout and not acknowledged:
+        raise ValueError(
+            "Protected holdout selected. Freeze and commit the code first, then rerun "
+            "with --acknowledge-holdout. Do not tune the code on these results."
+        )
+
+
+def repository_state() -> tuple[str, bool]:
+    """Return the commit and dirty state recorded with every evaluation row."""
+    try:
+        commit = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=PROJECT_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        dirty = bool(subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=PROJECT_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip())
+    except (OSError, subprocess.CalledProcessError) as exc:
+        raise RuntimeError("Evaluation requires a Git repository with a readable HEAD.") from exc
+    return commit, dirty
 
 
 def require_api_key() -> str:
@@ -94,9 +154,19 @@ def write_markdown(path: Path, rows: list[dict], model: str) -> None:
 
 def main() -> None:
     args = parse_args()
-    questions = load_questions(args.question_bank, args.questions, args.limit)
+    questions = load_questions(
+        args.question_bank,
+        args.questions,
+        args.stage,
+        args.limit,
+    )
     if not questions:
         raise ValueError("No questions were selected.")
+    require_holdout_acknowledgement(questions, args.acknowledge_holdout)
+    git_commit, git_dirty = repository_state()
+    if any(row["evaluation_stage"] == HOLDOUT_STAGE for row in questions) and git_dirty:
+        raise ValueError("Protected holdout requires a clean, committed Git worktree.")
+    run_timestamp_utc = datetime.now(timezone.utc).isoformat()
 
     api_key = require_api_key()
     validate_model(args.model, api_key=api_key)
@@ -126,6 +196,9 @@ def main() -> None:
             **question_row,
             "model": args.model,
             "embedding_model": engine.config.embedding_model,
+            "run_timestamp_utc": run_timestamp_utc,
+            "git_commit": git_commit,
+            "git_dirty": git_dirty,
             "answer": result.get("answer", ""),
             "retrieval_strategy": result.get("retrieval_strategy", ""),
             "target_companies": ", ".join(result.get("target_companies", [])),

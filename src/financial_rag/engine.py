@@ -12,8 +12,6 @@ from pathlib import Path
 from typing import Sequence
 
 import pdfplumber
-import faiss
-from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
@@ -23,6 +21,8 @@ from openai import OpenAI
 from .config import CACHE_VERSION, PROJECT_COMPANIES, RAGConfig
 from .document_processing import clean_pdf_text, infer_fiscal_year_end, load_pdf_documents
 from .filings import validate_filing_set
+from .generation import format_context, message_text, stop_reason, token_usage
+from .index_cache import read_cache, write_cache
 from .prompts import SYSTEM_PROMPT
 from .retrieval import (
     AI_RISK_FOCUS_QUERIES,
@@ -34,6 +34,7 @@ from .retrieval import (
     is_exact_financial,
     target_companies,
 )
+from .schemas import AnswerResult, BuildStats, SourceReference
 
 
 def list_available_models(api_key: str | None = None) -> list[str]:
@@ -58,7 +59,7 @@ class FinancialRAG:
         self.vector_store: FAISS | None = None
         self.table_pages: list[Document] = []
         self.evidence_pages: list[Document] = []
-        self.build_stats: dict = {}
+        self.build_stats: BuildStats | dict = {}
         openai_api_key = (api_key or os.environ.get("OPENAI_API_KEY", "")).strip()
         if not openai_api_key:
             raise ValueError(
@@ -85,7 +86,7 @@ class FinancialRAG:
         vector = self.embeddings.embed_query("Embedding credential check")
         return len(vector)
 
-    def build(self, pdf_paths: Sequence[str | Path]) -> dict:
+    def build(self, pdf_paths: Sequence[str | Path]) -> BuildStats:
         started = time.perf_counter()
         page_documents: list[Document] = []
         table_pages: list[Document] = []
@@ -146,63 +147,12 @@ class FinancialRAG:
         }
         return self._fingerprint_for_config(pdf_paths, index_config)
 
-    def _load_safe_cache(self, faiss_path: Path, payload: dict) -> None:
-        """Restore a FAISS store without deserializing executable pickle data."""
-        index_path = faiss_path / "index.faiss"
-        documents = payload.get("documents")
-        raw_mapping = payload.get("index_to_docstore_id")
-        if not index_path.is_file() or not isinstance(documents, dict) or not isinstance(raw_mapping, dict):
-            raise ValueError("Cache is incomplete or uses the retired pickle format.")
-
-        try:
-            mapping = {int(index): str(doc_id) for index, doc_id in raw_mapping.items()}
-            docstore = InMemoryDocstore({
-                str(doc_id): Document(
-                    page_content=str(item["page_content"]),
-                    metadata=dict(item["metadata"]),
-                )
-                for doc_id, item in documents.items()
-            })
-            index = faiss.read_index(str(index_path))
-        except (KeyError, TypeError, ValueError, RuntimeError) as exc:
-            raise ValueError(f"Cache contents are invalid: {exc}") from exc
-
-        expected_indexes = set(range(index.ntotal))
-        if set(mapping) != expected_indexes or set(mapping.values()) != set(documents):
-            raise ValueError("Cache document mapping does not match the FAISS index.")
-        self.vector_store = FAISS(self.embeddings, index, docstore, mapping)
-
-    def _safe_cache_payload(self, stats: dict) -> dict:
-        """Create a JSON-only cache payload for documents and metadata."""
-        if self.vector_store is None:
-            raise RuntimeError("Vector store was not created during build.")
-        indexed = getattr(self.vector_store.docstore, "_dict", {})
-        return {
-            "cache_format": "faiss-json-v2",
-            "build_stats": stats,
-            "index_to_docstore_id": {
-                str(index): doc_id
-                for index, doc_id in self.vector_store.index_to_docstore_id.items()
-            },
-            "documents": {
-                doc_id: {
-                    "page_content": document.page_content,
-                    "metadata": document.metadata,
-                }
-                for doc_id, document in indexed.items()
-            },
-            "table_pages": [
-                {"page_content": doc.page_content, "metadata": doc.metadata}
-                for doc in self.table_pages
-            ],
-        }
-
     def build_or_load(
         self,
         pdf_paths: Sequence[str | Path],
         cache_root: str | Path,
         rebuild: bool = False,
-    ) -> dict:
+    ) -> BuildStats:
         """Load a JSON-backed FAISS cache or build and persist a new one."""
         paths = [Path(path).resolve() for path in pdf_paths]
         # Validate before either a cache hit or a rebuild. Public callers may
@@ -215,14 +165,11 @@ class FinancialRAG:
         index_path = faiss_path / "index.faiss"
 
         if not rebuild and index_path.is_file() and metadata_path.is_file():
-            payload = json.loads(metadata_path.read_text(encoding="utf-8"))
-            self._load_safe_cache(faiss_path, payload)
-            self.table_pages = [
-                Document(page_content=item["page_content"], metadata=item["metadata"])
-                for item in payload.get("table_pages", [])
-            ]
+            self.vector_store, self.build_stats, self.table_pages = read_cache(
+                cache_path,
+                self.embeddings,
+            )
             self._refresh_evidence_pages(paths)
-            self.build_stats = dict(payload["build_stats"])
             self.build_stats.update({
                 "cache_hit": True,
                 "cache_fingerprint": fingerprint,
@@ -232,16 +179,9 @@ class FinancialRAG:
 
         stats = self.build(paths)
         self._refresh_evidence_pages(paths)
-        cache_path.mkdir(parents=True, exist_ok=True)
         if self.vector_store is None:
             raise RuntimeError("Vector store was not created during build.")
-        faiss_path.mkdir(parents=True, exist_ok=True)
-        faiss.write_index(self.vector_store.index, str(index_path))
-        payload = self._safe_cache_payload(stats)
-        metadata_path.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        write_cache(cache_path, self.vector_store, self.table_pages, stats)
         self.build_stats.update({
             "cache_hit": False,
             "cache_fingerprint": fingerprint,
@@ -785,102 +725,21 @@ class FinancialRAG:
         self,
         documents: Sequence[Document],
     ) -> tuple[str, list[Document]]:
-        """Format context and return only documents actually sent to the model."""
-        blocks = []
-        included_documents = []
-        total_chars = 0
-        for index, doc in enumerate(documents, start=1):
-            metadata = doc.metadata
-            label = (
-                f"Source {index}: {metadata.get('company', '')}; "
-                f"{metadata.get('source_file', metadata.get('source', ''))}; "
-                f"PDF page {metadata.get('page_number', '')}; "
-                f"type={metadata.get('doc_type', 'text')}"
-            )
-            block = f"[{label}]\n{doc.page_content.strip()}"
-            if total_chars + len(block) > self.config.max_context_chars:
-                break
-            blocks.append(block)
-            included_documents.append(doc)
-            total_chars += len(block)
-        return "\n\n".join(blocks), included_documents
+        return format_context(documents, self.config.max_context_chars)
 
     @staticmethod
     def _message_text(message) -> str:
-        content = message.content
-        if isinstance(content, str):
-            return content
-        if isinstance(content, list):
-            parts = []
-            for block in content:
-                if isinstance(block, dict) and block.get("type") == "text":
-                    parts.append(block.get("text", ""))
-                elif getattr(block, "type", None) == "text":
-                    parts.append(getattr(block, "text", ""))
-            return "\n".join(part for part in parts if part).strip()
-        return str(content)
+        return message_text(message)
 
     @staticmethod
     def _stop_reason(message) -> str:
-        metadata = getattr(message, "response_metadata", None) or {}
-        reason = str(
-            metadata.get("finish_reason")
-            or metadata.get("stop_reason")
-            or metadata.get("stopReason")
-            or metadata.get("status")
-            or ""
-        )
-        return "max_tokens" if reason in {"length", "incomplete"} else reason
+        return stop_reason(message)
 
     @staticmethod
     def _token_usage(message) -> dict[str, int]:
-        """Normalize token accounting returned by LangChain model wrappers."""
-        usage = getattr(message, "usage_metadata", None) or {}
-        metadata = getattr(message, "response_metadata", None) or {}
-        if not usage:
-            usage = metadata.get("token_usage") or metadata.get("usage") or {}
+        return token_usage(message)
 
-        input_details = usage.get("input_token_details") or {}
-        output_details = usage.get("output_token_details") or {}
-
-        def value(*keys) -> int:
-            for key in keys:
-                raw = usage.get(key)
-                if raw is not None:
-                    try:
-                        return int(raw)
-                    except (TypeError, ValueError):
-                        pass
-            return 0
-
-        input_tokens = value("input_tokens", "prompt_tokens")
-        output_tokens = value("output_tokens", "completion_tokens")
-        total_tokens = value("total_tokens") or input_tokens + output_tokens
-        reasoning_tokens = output_details.get("reasoning", 0) or usage.get(
-            "reasoning_tokens", 0
-        )
-        cached_input_tokens = (
-            input_details.get("cache_read", 0)
-            or usage.get("cache_read_input_tokens", 0)
-            or usage.get("cached_tokens", 0)
-        )
-        try:
-            reasoning_tokens = int(reasoning_tokens)
-        except (TypeError, ValueError):
-            reasoning_tokens = 0
-        try:
-            cached_input_tokens = int(cached_input_tokens)
-        except (TypeError, ValueError):
-            cached_input_tokens = 0
-        return {
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "total_tokens": total_tokens,
-            "reasoning_tokens": reasoning_tokens,
-            "cached_input_tokens": cached_input_tokens,
-        }
-
-    def answer(self, question: str) -> dict:
+    def answer(self, question: str) -> AnswerResult:
         started = time.perf_counter()
         documents, strategy, companies = self.retrieve(question)
         context, context_documents = self._format_context(documents)
@@ -919,7 +778,7 @@ class FinancialRAG:
             if continuation:
                 answer = answer.rstrip() + "\n" + continuation.lstrip()
             stop_reason = self._stop_reason(response)
-        sources = []
+        sources: list[SourceReference] = []
         for rank, doc in enumerate(context_documents, start=1):
             metadata = doc.metadata
             sources.append({
@@ -930,7 +789,7 @@ class FinancialRAG:
                 "doc_type": metadata.get("doc_type", ""),
                 "preview": " ".join(doc.page_content.split())[:800],
             })
-        return {
+        result: AnswerResult = {
             "question": question,
             "answer": answer,
             "sources": sources,
@@ -945,3 +804,4 @@ class FinancialRAG:
             "context_document_count": len(context_documents),
             **token_usage,
         }
+        return result

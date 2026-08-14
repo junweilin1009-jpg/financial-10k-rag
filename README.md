@@ -73,6 +73,14 @@ Run all public questions:
 python evaluation/run_evaluation.py --all
 ```
 
+`--all` deliberately excludes the 15 protected holdout questions. Run a named development stage with `--stage`, or run the holdout only after freezing and committing the code:
+
+```bash
+python evaluation/run_evaluation.py --stage "Final unseen holdout" --acknowledge-holdout
+```
+
+Holdout execution refuses a dirty Git worktree. Every result row records the commit SHA, dirty state, and UTC run timestamp so the evaluation can be traced to an exact code version.
+
 Run selected IDs or a short smoke test:
 
 ```bash

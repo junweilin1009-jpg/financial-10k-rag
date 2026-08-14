@@ -4,12 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import faiss
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_core.embeddings import Embeddings
 
 from financial_rag import FinancialRAG
+from financial_rag.index_cache import cache_payload, load_vector_store, read_cache, write_cache
 
 
 class FakeEmbeddings(Embeddings):
@@ -34,30 +34,47 @@ class SafeCacheTests(unittest.TestCase):
         )
 
     def test_round_trip_uses_faiss_and_json_only(self) -> None:
-        payload = self.engine._safe_cache_payload({"indexed_documents": 2})
+        payload = cache_payload(
+            self.engine.vector_store,
+            self.engine.table_pages,
+            {"indexed_documents": 2},
+        )
         with tempfile.TemporaryDirectory() as raw_dir:
             cache_dir = Path(raw_dir)
-            faiss.write_index(self.engine.vector_store.index, str(cache_dir / "index.faiss"))
+            write_cache(
+                cache_dir,
+                self.engine.vector_store,
+                self.engine.table_pages,
+                {"indexed_documents": 2},
+            )
+            restored, stats, table_pages = read_cache(cache_dir, self.engine.embeddings)
 
-            restored = object.__new__(FinancialRAG)
-            restored.embeddings = self.engine.embeddings
-            restored._load_safe_cache(cache_dir, payload)
-
-            self.assertEqual(restored.vector_store.index.ntotal, 2)
+            self.assertEqual(restored.index.ntotal, 2)
             self.assertEqual(
-                {doc.metadata["company"] for doc in restored.vector_store.docstore._dict.values()},
+                {doc.metadata["company"] for doc in restored.docstore._dict.values()},
                 {"Alphabet/Google", "Amazon"},
             )
+            self.assertEqual(stats["indexed_documents"], 2)
+            self.assertEqual(table_pages, [])
             self.assertFalse((cache_dir / "index.pkl").exists())
 
     def test_rejects_mismatched_document_mapping(self) -> None:
-        payload = self.engine._safe_cache_payload({"indexed_documents": 2})
+        payload = cache_payload(
+            self.engine.vector_store,
+            self.engine.table_pages,
+            {"indexed_documents": 2},
+        )
         payload["index_to_docstore_id"].pop("1")
         with tempfile.TemporaryDirectory() as raw_dir:
             cache_dir = Path(raw_dir)
-            faiss.write_index(self.engine.vector_store.index, str(cache_dir / "index.faiss"))
+            write_cache(
+                cache_dir,
+                self.engine.vector_store,
+                self.engine.table_pages,
+                {"indexed_documents": 2},
+            )
             with self.assertRaisesRegex(ValueError, "does not match"):
-                self.engine._load_safe_cache(cache_dir, payload)
+                load_vector_store(cache_dir / "faiss", payload, self.engine.embeddings)
 
 
 if __name__ == "__main__":
