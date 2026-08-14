@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import os
 import re
 import time
@@ -35,6 +36,8 @@ from .retrieval import (
     target_companies,
 )
 from .schemas import AnswerResult, BuildStats, SourceReference
+
+logger = logging.getLogger(__name__)
 
 
 def list_available_models(api_key: str | None = None) -> list[str]:
@@ -290,7 +293,13 @@ class FinancialRAG:
                                 },
                             )
                         )
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "Could not refresh priority evidence pages from %s; "
+                    "continuing with indexed content: %s",
+                    path,
+                    exc,
+                )
                 continue
 
     def _evidence_supplements(
@@ -691,7 +700,13 @@ class FinancialRAG:
                             page_content=clean_pdf_text(raw_text),
                             metadata=metadata,
                         )
-            except Exception:
+            except Exception as exc:
+                logger.warning(
+                    "Could not expand qualitative context from %s; "
+                    "continuing with retrieved chunks: %s",
+                    path,
+                    exc,
+                )
                 continue
 
         return [expanded.get(key, fallback) for key, _metadata, fallback in selected]

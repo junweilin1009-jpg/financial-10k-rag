@@ -1,6 +1,11 @@
 import unittest
 
-from financial_rag.document_processing import clean_pdf_text, infer_company, infer_fiscal_year_end
+from financial_rag.document_processing import (
+    clean_pdf_text,
+    extract_markdown_tables,
+    infer_company,
+    infer_fiscal_year_end,
+)
 from financial_rag.engine import infer_fiscal_year_end as engine_fiscal_year_end
 
 
@@ -21,6 +26,19 @@ class DocumentProcessingTests(unittest.TestCase):
     def test_pdf_noise_cleanup(self):
         text = "Table of Contents\n2026/4/13 16:18\nRevenue $ 100\n"
         self.assertEqual(clean_pdf_text(text), "Revenue $ 100")
+
+    def test_table_extraction_failure_is_logged_and_falls_back(self):
+        class BrokenPage:
+            @staticmethod
+            def extract_tables():
+                raise RuntimeError("synthetic parser failure")
+
+        with self.assertLogs("financial_rag.document_processing", level="WARNING") as logs:
+            tables = extract_markdown_tables(BrokenPage(), "amazon.pdf", 42)
+
+        self.assertEqual(tables, [])
+        self.assertIn("amazon.pdf page 42", logs.output[0])
+        self.assertIn("using page text only", logs.output[0])
 
 
 if __name__ == "__main__":

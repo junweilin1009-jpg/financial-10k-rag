@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import os
+import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from langchain_core.documents import Document
@@ -55,6 +57,24 @@ class ContextFormattingTests(unittest.TestCase):
 
         self.assertEqual(context, "")
         self.assertEqual(included, [])
+
+    def test_full_page_expansion_failure_is_logged_and_keeps_chunk(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_dir:
+            source = Path(raw_dir) / "filing.pdf"
+            source.touch()
+            document = Document(
+                page_content="retrieved fallback",
+                metadata={"company": "Amazon", "source": str(source), "page_number": 7},
+            )
+
+            with (
+                patch("financial_rag.engine.pdfplumber.open", side_effect=RuntimeError("broken")),
+                self.assertLogs("financial_rag.engine", level="WARNING") as logs,
+            ):
+                expanded = FinancialRAG._expand_qualitative_pages([document])
+
+        self.assertEqual(expanded, [document])
+        self.assertIn("continuing with retrieved chunks", logs.output[0])
 
 
 if __name__ == "__main__":

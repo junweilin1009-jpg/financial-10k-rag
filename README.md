@@ -61,7 +61,7 @@ One question and exit:
 financial-rag-chat --question "What was Microsoft's Productivity and Business Processes segment revenue for fiscal year 2024?"
 ```
 
-The equivalent module command is `python -m financial_rag.cli`. Run either command from the repository root so the default `data/10k/` path resolves correctly.
+Add `--verbose` to either CLI mode when diagnosing index or retrieval failures. Operational logs go to stderr; answers and source previews remain on stdout. The equivalent module command is `python -m financial_rag.cli`. Run either command from the repository root so the default `data/10k/` path resolves correctly.
 
 ### Google Colab
 
@@ -90,7 +90,7 @@ python evaluation/run_evaluation.py --questions CLASS-002,CLASS-005,CLASS-010
 python evaluation/run_evaluation.py --all --limit 3
 ```
 
-Each run creates a CSV and a readable Markdown answer file under `outputs/` by default. The question bank exposes questions, reference answers, source references, stage labels, and review status in [`evaluation/question_bank.csv`](evaluation/question_bank.csv).
+Add `--verbose` for diagnostic logs. Each run creates a CSV and a readable Markdown answer file under `outputs/` by default. The question bank exposes questions, reference answers, source references, stage labels, and review status in [`evaluation/question_bank.csv`](evaluation/question_bank.csv).
 
 | Evaluation stage | Questions | Purpose |
 |---|---:|---|

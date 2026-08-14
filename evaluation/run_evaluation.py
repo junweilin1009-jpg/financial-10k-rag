@@ -6,6 +6,7 @@ import argparse
 import csv
 import getpass
 import json
+import logging
 import os
 import subprocess
 from datetime import UTC, datetime
@@ -13,6 +14,9 @@ from pathlib import Path
 
 from financial_rag import DEFAULT_LLM_MODEL, FinancialRAG, RAGConfig, validate_model
 from financial_rag.filings import validate_filing_set
+from financial_rag.logging_config import configure_logging
+
+logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_BANK = PROJECT_ROOT / "evaluation" / "question_bank.csv"
@@ -51,6 +55,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Required when selecting protected holdout questions.",
     )
+    parser.add_argument("--verbose", action="store_true", help="Enable diagnostic debug logs.")
     return parser.parse_args()
 
 
@@ -157,6 +162,7 @@ def write_markdown(path: Path, rows: list[dict], model: str) -> None:
 
 def main() -> None:
     args = parse_args()
+    configure_logging(verbose=args.verbose)
     questions = load_questions(
         args.question_bank,
         args.questions,
@@ -178,23 +184,25 @@ def main() -> None:
 
     engine = FinancialRAG(RAGConfig(llm_model=args.model), api_key=api_key)
     dimensions = engine.validate_embedding_credentials()
-    print(f"Embedding credentials valid: {dimensions} dimensions")
+    logger.info("Embedding credentials valid: %s dimensions", dimensions)
     stats = engine.build_or_load(pdf_paths, CACHE_DIR, rebuild=args.rebuild_index)
-    print(
-        f"Index {'loaded from cache' if stats.get('cache_hit') else 'built'}: "
-        f"{stats.get('indexed_documents', 0)} documents"
+    logger.info(
+        "Index %s: %s documents",
+        "loaded from cache" if stats.get("cache_hit") else "built",
+        stats.get("indexed_documents", 0),
     )
 
     output_rows = []
     for number, question_row in enumerate(questions, start=1):
         question_id = question_row["question_id"]
-        print(f"[{number}/{len(questions)}] {question_id}")
+        logger.info("Evaluating [%s/%s] %s", number, len(questions), question_id)
         result = {}
         error = ""
         try:
             result = engine.answer(question_row["question"])
         except Exception as exc:  # Keep the remaining batch auditable.
             error = f"{type(exc).__name__}: {exc}"
+            logger.exception("Evaluation question %s failed", question_id)
         output_rows.append(
             {
                 **question_row,

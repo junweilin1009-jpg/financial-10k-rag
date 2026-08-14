@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
+import logging
 import os
 from pathlib import Path
 
@@ -20,6 +21,10 @@ from financial_rag import (
 )
 from financial_rag.document_processing import infer_company
 from financial_rag.filings import validate_filing_set
+from financial_rag.logging_config import configure_logging
+
+configure_logging()
+logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = PROJECT_ROOT / "data" / "10k"
@@ -185,6 +190,7 @@ if build_button:
                 f"{dimensions} embedding dimensions."
             )
         except Exception as exc:
+            logger.exception("RAG index initialization failed")
             st.exception(exc)
 
 
@@ -235,6 +241,7 @@ if question:
                     }
                 )
             except Exception as exc:
+                logger.exception("Question answering failed")
                 st.exception(exc)
 
 if st.session_state.messages:

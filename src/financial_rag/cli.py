@@ -4,12 +4,16 @@ from __future__ import annotations
 
 import argparse
 import getpass
+import logging
 import os
 from pathlib import Path
 
 from .config import DEFAULT_LLM_MODEL, RAGConfig
 from .engine import FinancialRAG, validate_model
 from .filings import validate_filing_set
+from .logging_config import configure_logging
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args() -> argparse.Namespace:
@@ -22,6 +26,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cache-dir", type=Path, default=Path("cache/faiss"))
     parser.add_argument("--rebuild-index", action="store_true")
     parser.add_argument("--no-sources", action="store_true", help="Hide retrieved-source previews.")
+    parser.add_argument("--verbose", action="store_true", help="Enable diagnostic debug logs.")
     return parser.parse_args()
 
 
@@ -54,15 +59,18 @@ def print_result(result: dict, show_sources: bool) -> None:
 
 def main() -> None:
     args = parse_args()
+    configure_logging(verbose=args.verbose)
     api_key = require_api_key()
     validate_model(args.model, api_key=api_key)
     pdf_paths = sorted(args.pdf_dir.glob("*.pdf"))
     validate_filing_set(pdf_paths)
+    logger.info("Validated %s supported filings from %s", len(pdf_paths), args.pdf_dir)
 
     engine = FinancialRAG(RAGConfig(llm_model=args.model), api_key=api_key)
     dimensions = engine.validate_embedding_credentials()
     stats = engine.build_or_load(pdf_paths, args.cache_dir, rebuild=args.rebuild_index)
     action = "loaded from cache" if stats.get("cache_hit") else "built from PDFs"
+    logger.info("Vector index %s with %s documents", action, stats.get("indexed_documents", 0))
     print(
         f"Ready: {args.model} + {engine.config.embedding_model}; index {action}; "
         f"{stats.get('indexed_documents', 0)} documents; {dimensions} embedding dimensions."
@@ -86,6 +94,7 @@ def main() -> None:
         try:
             print_result(engine.answer(question), show_sources=not args.no_sources)
         except Exception as exc:
+            logger.exception("Question answering failed")
             print(f"Error: {type(exc).__name__}: {exc}")
 
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 import re
 from pathlib import Path
 
@@ -9,6 +10,8 @@ import pdfplumber
 from langchain_core.documents import Document
 
 from .filings import FilingMetadata, inspect_filing
+
+logger = logging.getLogger(__name__)
 
 TABLE_MARKERS = (
     "consolidated balance sheets",
@@ -93,6 +96,25 @@ def looks_like_table_page(text: str) -> bool:
     return marker_match and numeric_density >= 40
 
 
+def extract_markdown_tables(page, source_file: str, page_number: int) -> list[str]:
+    """Extract page tables while preserving text-only retrieval as a safe fallback."""
+    try:
+        table_blocks = []
+        for table_index, table in enumerate(page.extract_tables(), start=1):
+            markdown = table_to_markdown(table)
+            if markdown:
+                table_blocks.append(f"Table {table_index}:\n{markdown}")
+        return table_blocks
+    except Exception as exc:
+        logger.warning(
+            "Table extraction failed for %s page %s; using page text only: %s",
+            source_file,
+            page_number,
+            exc,
+        )
+        return []
+
+
 def load_pdf_documents(
     pdf_path: Path,
     filing: FilingMetadata | None = None,
@@ -118,14 +140,7 @@ def load_pdf_documents(
             page_documents.append(Document(page_content=text, metadata=metadata))
 
             if looks_like_table_page(text):
-                table_blocks = []
-                try:
-                    for table_index, table in enumerate(page.extract_tables(), start=1):
-                        markdown = table_to_markdown(table)
-                        if markdown:
-                            table_blocks.append(f"Table {table_index}:\n{markdown}")
-                except Exception:
-                    table_blocks = []
+                table_blocks = extract_markdown_tables(page, pdf_path.name, page_number)
                 table_content = text
                 if table_blocks:
                     table_content += "\n\n" + "\n\n".join(table_blocks)
