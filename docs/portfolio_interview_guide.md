@@ -21,25 +21,20 @@
 
 ## 我的实际职责（Junwei Lin）
 
-- **数据准备：** 预处理并整理三家公司的 397 页 10-K 文件，为后续解析、公司识别和 PDF
-  页级溯源提供一致的输入；
+- **参数测试：** 运行并检查不同实验配置下的参数测试，比较输出结果并帮助验证最终设置；
 - **评估设计：** 参与构建 117 题分阶段问题库，覆盖事实检索、计算、跨公司比较、多语言、
   定性分析和对抗性问题；
 - **质量验证：** 核对参考答案、filing/页码依据和重复出现的失败类型，使改进依据证据质量，
-  而不只是答案是否流畅；
-- **作品集发布：** 为可复现安装、测试、文档、CI 和招聘者可读性定义验收标准，完成最终检查
-  并协调 GitHub 公开发布。
+  而不只是答案是否流畅。
 
-这四项职责可以概括为：**把原始年报变成可用数据，把问题变成可审计评估，再把课程成果变成
-可公开展示的工程项目。**
+这三项职责可以概括为：**用参数实验比较方案，用分阶段题库评估效果，再用财务证据验证答案。**
 
 ## 30 秒版本：HR
 
-我参与构建了一个金融 10-K RAG 项目，主要负责三份年报的数据预处理、117 题评估库建设、
-来源与答案验证，以及作品集发布验收。系统读取 Alphabet、Amazon 和 Microsoft 共 397 页的
-年度报告，使用 OpenAI embeddings、FAISS 和 GPT 模型回答财务事实、计算及跨公司比较问题。
-我重点保证输入文件、参考答案和引用页面能够被追踪，并推动最终版本达到可安装、可测试、有 CI、
-有完整文档的 GitHub 项目标准。
+我参与构建了一个金融 10-K RAG 项目，主要负责参数测试、117 题分阶段评估库建设，以及来源与
+答案验证。系统读取 Alphabet、Amazon 和 Microsoft 共 397 页的年度报告，使用 OpenAI
+embeddings、FAISS 和 GPT 模型回答财务事实、计算及跨公司比较问题。我通过实验配置对比和
+证据核查，帮助团队判断改动是否真正提高了回答质量。
 
 ## 1 分钟版本：Hiring Manager
 
@@ -200,12 +195,12 @@ holdout，运行 holdout 必须显式确认且 Git 工作树干净，并在结�
 
 下面前三条最贴近 Junwei Lin 在团队中的职责；后面的条目适合在能够清楚解释团队协作边界时使用。
 
-- Prepared and validated a 397-page corpus of Alphabet, Amazon, and Microsoft Form 10-K filings,
-  supporting consistent PDF processing and page-level evidence traceability.
+- Ran and reviewed parameter tests across experimental configurations, comparing outputs to help
+  validate the final financial RAG settings.
 - Co-developed a staged 117-question evaluation bank spanning factual retrieval, calculations,
   cross-company comparisons, multilingual prompts, qualitative analysis, and adversarial cases.
-- Reviewed reference answers, filing/page evidence, and recurring failure modes; defined release
-  acceptance criteria for reproducibility, testing, CI, documentation, and GitHub presentation.
+- Reviewed reference answers, filing/page evidence, and recurring failure modes so changes were
+  evaluated against evidence quality rather than answer fluency alone.
 
 - Engineered an evidence-grounded RAG pipeline over 397 pages of Alphabet, Amazon, and Microsoft
   Form 10-K filings using OpenAI embeddings, FAISS, issuer-aware retrieval, and page-level source
