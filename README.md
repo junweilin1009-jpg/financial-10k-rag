@@ -2,6 +2,8 @@
 
 # Financial 10-K RAG Assistant
 
+[English](README.md) | [简体中文](README_CN.md)
+
 **An evidence-grounded AI research assistant for analyzing the 2025 Form 10-K filings of Alphabet, Amazon, and Microsoft.**
 
 [![CI](https://github.com/junweilin1009-jpg/financial-10k-rag/actions/workflows/ci.yml/badge.svg)](https://github.com/junweilin1009-jpg/financial-10k-rag/actions/workflows/ci.yml)
