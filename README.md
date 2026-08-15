@@ -190,8 +190,8 @@ These responsibilities connected raw financial documents to an auditable evaluat
 | Team member | Primary contribution |
 |---|---|
 | Zhewei Hu | Financial retrieval optimization, multi-model evaluation, final repository integration |
-| Shuai Yuan | OpenAI LLM/embedding experiments, parameter tests, evaluation support |
-| **Junwei Lin** | **Source-data preparation, staged evaluation design, evidence validation, portfolio-release ownership** |
+| Shuai Yuan | OpenAI LLM/embedding experiments, evaluation support |
+| **Junwei Lin** | **Parameter tests，staged evaluation design, evidence validation** |
 | Yuhan Ding | Baseline financial RAG architecture and domain-evidence design |
 | Shuying Chen | Error analysis, question-bank review, iterative improvement |
 | Qige Wang | Streamlit/Colab workflow, documentation, presentation support |
