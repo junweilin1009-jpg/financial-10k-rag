@@ -178,22 +178,21 @@ tests/                   Deterministic regression tests
 
 ## Project context and my contribution
 
-This portfolio release builds on a six-person Johns Hopkins Carey Business School course project. My responsibilities focused on making the source data usable, the evaluation credible, and the final repository ready for public review.
+This portfolio release builds on a six-person Johns Hopkins Carey Business School course project. My responsibilities focused on parameter testing, staged evaluation design, and evidence-based quality validation.
 
 ### My responsibilities — Junwei Lin
 
-- **Source-data preparation:** preprocessed and organized three company filings covering 397 PDF pages, supporting consistent downstream parsing and page-level traceability.
+- **Parameter testing:** ran and reviewed parameter tests across experimental configurations, helping compare outputs and validate the final settings.
 - **Evaluation design:** co-developed the staged 117-question bank across factual retrieval, calculations, cross-company comparisons, multilingual prompts, qualitative analysis, and adversarial cases.
 - **Quality validation:** reviewed reference answers, filing/page references, and recurring failure cases so retrieval changes could be checked against evidence rather than answer fluency alone.
-- **Portfolio release ownership:** defined acceptance criteria for reproducibility, installation, testing, documentation, CI, and recruiter readability; coordinated the final validation and public GitHub release.
 
-These responsibilities connected raw financial documents to an auditable evaluation process and helped turn a course deliverable into a repository that another reader can inspect, run, and discuss in an interview.
+These responsibilities connected parameter choices to an auditable evaluation process and helped the team judge changes using evidence quality rather than answer fluency alone.
 
 | Team member | Primary contribution |
 |---|---|
 | Zhewei Hu | Financial retrieval optimization, multi-model evaluation, final repository integration |
 | Shuai Yuan | OpenAI LLM/embedding experiments, evaluation support |
-| **Junwei Lin** | **Parameter tests，staged evaluation design, evidence validation** |
+| **Junwei Lin** | **Parameter tests, staged evaluation design, evidence validation** |
 | Yuhan Ding | Baseline financial RAG architecture and domain-evidence design |
 | Shuying Chen | Error analysis, question-bank review, iterative improvement |
 | Qige Wang | Streamlit/Colab workflow, documentation, presentation support |
