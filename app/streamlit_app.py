@@ -197,6 +197,51 @@ if build_button:
 engine = st.session_state.get("rag_engine")
 if engine is None:
     st.info("Enter an API key, confirm the model ID, and load the RAG index to begin.")
+
+    feature_columns = st.columns(3)
+    features = (
+        (
+            "Evidence-grounded",
+            "Answers are generated from retrieved 10-K passages instead of unsupported web knowledge.",
+        ),
+        (
+            "Finance-aware retrieval",
+            "Company routing and table-page support improve multi-company and numeric questions.",
+        ),
+        (
+            "Auditable answers",
+            "Every answer can expose the source filing, PDF page, retrieved text, and runtime metadata.",
+        ),
+    )
+    for column, (heading, description) in zip(feature_columns, features, strict=True):
+        with column.container(border=True):
+            st.markdown(f"#### {heading}")
+            st.write(description)
+
+    st.subheader("Try questions like")
+    question_columns = st.columns(3)
+    examples = (
+        (
+            "Direct fact",
+            "What was Microsoft's Productivity and Business Processes revenue in fiscal 2024?",
+        ),
+        (
+            "Cross-company comparison",
+            "Compare capital expenditures across Alphabet, Amazon, and Microsoft.",
+        ),
+        (
+            "Risk analysis",
+            "Identify one material AI-related risk for each company and cite the evidence.",
+        ),
+    )
+    for column, (label, example) in zip(question_columns, examples, strict=True):
+        with column:
+            st.caption(label.upper())
+            st.markdown(f"> {example}")
+
+    st.caption(
+        "Scope: three verified 2025 Form 10-K filings · 397 PDF pages · local fingerprinted FAISS cache"
+    )
     st.stop()
 
 st.success(
