@@ -19,13 +19,27 @@
 
 这些是仓库当前可以核对的规模，不代表生产用户数、商业收益或线上 SLA。
 
+## 我的实际职责（Junwei Lin）
+
+- **数据准备：** 预处理并整理三家公司的 397 页 10-K 文件，为后续解析、公司识别和 PDF
+  页级溯源提供一致的输入；
+- **评估设计：** 参与构建 117 题分阶段问题库，覆盖事实检索、计算、跨公司比较、多语言、
+  定性分析和对抗性问题；
+- **质量验证：** 核对参考答案、filing/页码依据和重复出现的失败类型，使改进依据证据质量，
+  而不只是答案是否流畅；
+- **作品集发布：** 为可复现安装、测试、文档、CI 和招聘者可读性定义验收标准，完成最终检查
+  并协调 GitHub 公开发布。
+
+这四项职责可以概括为：**把原始年报变成可用数据，把问题变成可审计评估，再把课程成果变成
+可公开展示的工程项目。**
+
 ## 30 秒版本：HR
 
-我参与构建并工程化了一个金融 10-K RAG 项目。系统读取 Alphabet、Amazon 和 Microsoft
-共 397 页的年度报告，使用 OpenAI embeddings、FAISS 和 GPT 模型回答财务事实、计算及
-跨公司比较问题。这个项目的重点不只是调用模型，而是保证公司、年份、单位、表格字段和引用
-页面一致。我把课程原型重构成可安装的 Python 包，加入 42 项测试、GitHub Actions、安全缓存、
-数据校验和可审计评估流程，使别人可以 Clone、安装、运行、测试并理解整个项目。
+我参与构建了一个金融 10-K RAG 项目，主要负责三份年报的数据预处理、117 题评估库建设、
+来源与答案验证，以及作品集发布验收。系统读取 Alphabet、Amazon 和 Microsoft 共 397 页的
+年度报告，使用 OpenAI embeddings、FAISS 和 GPT 模型回答财务事实、计算及跨公司比较问题。
+我重点保证输入文件、参考答案和引用页面能够被追踪，并推动最终版本达到可安装、可测试、有 CI、
+有完整文档的 GitHub 项目标准。
 
 ## 1 分钟版本：Hiring Manager
 
@@ -183,6 +197,15 @@ holdout，运行 holdout 必须显式确认且 Git 工作树干净，并在结�
 证据工程与评估设计，而不是单纯更换更大的模型。
 
 ## Resume Bullets（可按岗位选择 3–4 条）
+
+下面前三条最贴近 Junwei Lin 在团队中的职责；后面的条目适合在能够清楚解释团队协作边界时使用。
+
+- Prepared and validated a 397-page corpus of Alphabet, Amazon, and Microsoft Form 10-K filings,
+  supporting consistent PDF processing and page-level evidence traceability.
+- Co-developed a staged 117-question evaluation bank spanning factual retrieval, calculations,
+  cross-company comparisons, multilingual prompts, qualitative analysis, and adversarial cases.
+- Reviewed reference answers, filing/page evidence, and recurring failure modes; defined release
+  acceptance criteria for reproducibility, testing, CI, documentation, and GitHub presentation.
 
 - Engineered an evidence-grounded RAG pipeline over 397 pages of Alphabet, Amazon, and Microsoft
   Form 10-K filings using OpenAI embeddings, FAISS, issuer-aware retrieval, and page-level source
